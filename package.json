@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/gwgroup/fish-client/issues"
   },
-  "homepage": "https://github.com/gwgroup/fish-client#readme"
+  "homepage": "https://github.com/gwgroup/fish-client#readme",
+  "dependencies": {
+    "mqtt": "^2.18.8"
+  }
 }
