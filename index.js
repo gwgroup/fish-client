@@ -1,5 +1,5 @@
 var mqtt = require('mqtt');
-var mqttConfig=require('./config/index').mqtt;
+var mqttConfig = require('./config/index').mqtt;
 const
   CLIENT_ID = mqttConfig.clientId,
   PRODUCT_ID = mqttConfig.productId,
@@ -10,10 +10,10 @@ const
 
 var
   client = mqtt.connect(MQTT_URL, {
-    clientId:CLIENT_ID,
+    clientId: CLIENT_ID,
     rejectUnauthorized: false,
-    username:mqttConfig.username,
-    password:mqttConfig.password,
+    username: mqttConfig.username,
+    password: mqttConfig.password,
     ca: mqttConfig.ca,
     reconnecting: true,
     will: {
@@ -24,10 +24,10 @@ var
     }
   });
 
-client.on('connect',function () {
-  console.log(LWT_TOPIC,SUB_TOPIC,PUB_TOPIC);
+client.on('connect', function () {
+  console.log(LWT_TOPIC, SUB_TOPIC, PUB_TOPIC);
   client.publish(LWT_TOPIC, JSON.stringify({ type: 1001 }), { qos: 2, retain: false });
-  client.subscribe(SUB_TOPIC, { qos: 2, retain: false });
+  client.subscribe(SUB_TOPIC, { qos: 0, retain: false });
   //client.publish(PUB_TOPIC, 'Hello mqtt', { qos: 2, retain: false });
 });
 
@@ -44,3 +44,5 @@ var exit = function () {
     }
   });
 };
+
+// module.exports = { client, exit };
