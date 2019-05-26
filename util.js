@@ -1,9 +1,5 @@
 var os = require("os");
 
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
 /**
  * 获取MAC
  */
@@ -19,14 +15,8 @@ function __getMac() {
 /**
  * 获取客户端ID
  */
-async function getClient() {
-  let clientid = undefined;
-  while (true) {
-    clientid = __getMac();
-    if (clientid != undefined) {
-      return clientid;
-    }
-    await sleep(10000);
-  }
+function getClient() {
+  return __getMac();;
 }
+
 module.exports = { getClient };
