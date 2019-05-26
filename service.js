@@ -1,6 +1,6 @@
 var rpio = require('rpio'),
   EventEmitter = require('events').EventEmitter,
-  exec = require('child_process').exec,
+  cmdExec = require('child_process').exec,
   ev = new EventEmitter();
 //设备状态代理，如果状态改变触发事件
 let status = new Proxy({ pump: 0 }, {
@@ -57,7 +57,7 @@ function closePump() {
  */
 function exec(body) {
   let { index, cmd } = body;
-  exec(cmd, function (err, stdout, stderr) {
+  cmdExec(cmd, function (err, stdout, stderr) {
     if (err) {
       console.error('EXEC ERROR: ', stderr);
     } else {
