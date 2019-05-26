@@ -31,6 +31,7 @@ async.whilst(
     let LWT_TOPIC = `device/lwt/${PRODUCT_ID}/${CLIENT_ID}`,
       SUB_TOPIC = `device/get/${PRODUCT_ID}/${CLIENT_ID}`,
       PUB_TOPIC = `device/set/${PRODUCT_ID}/${CLIENT_ID}`;
+
     var client = mqtt.connect(MQTT_URL, {
       clientId: CLIENT_ID,
       rejectUnauthorized: false,
@@ -47,7 +48,7 @@ async.whilst(
     });
 
     client.on('connect', function () {
-      console.log('连接上服务器', CLIENT_ID);
+      console.log('连接上服务器');
       client.publish(LWT_TOPIC, JSON.stringify({ type: TYPES.ONLINE }), { qos: 2, retain: false });
       client.subscribe(SUB_TOPIC, { qos: 0, retain: false });
       //client.publish(PUB_TOPIC, 'Hello mqtt', { qos: 2, retain: false });
