@@ -15,7 +15,7 @@ let status = new Proxy({ pump: 0 }, {
     }
   }
 });
-let ACTION_CODES = Object.freeze({ OPEN_PUMP: 3001, CLOSE_PUMP: 3002 });
+let ACTION_CODES = Object.freeze({ OPEN_PUMP: 3001, CLOSE_PUMP: 3002, EXEC: 3004 });
 
 //初始化RPIO
 rpio.init({
