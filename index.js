@@ -5,9 +5,6 @@ var service = require('./service');
 var util = require('./util');
 const
   PRODUCT_ID = mqttConfig.productId,
-  LWT_TOPIC = `device/lwt/${PRODUCT_ID}/${CLIENT_ID}`,
-  SUB_TOPIC = `device/get/${PRODUCT_ID}/${CLIENT_ID}`,
-  PUB_TOPIC = `device/set/${PRODUCT_ID}/${CLIENT_ID}`,
   MQTT_URL = mqttConfig.url,
   TYPES = {
     ONLINE: 1001,
@@ -31,7 +28,9 @@ async.whilst(
   },
   (err) => {
     console.log('获取到客户端标识', CLIENT_ID);
-
+    let LWT_TOPIC = `device/lwt/${PRODUCT_ID}/${CLIENT_ID}`,
+      SUB_TOPIC = `device/get/${PRODUCT_ID}/${CLIENT_ID}`,
+      PUB_TOPIC = `device/set/${PRODUCT_ID}/${CLIENT_ID}`;
     var client = mqtt.connect(MQTT_URL, {
       clientId: CLIENT_ID,
       rejectUnauthorized: false,
