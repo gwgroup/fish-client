@@ -3,7 +3,7 @@ var mqttConfig = require('./config/index').mqtt;
 var service = require('./service');
 var util = require('./util');
 const
-  CLIENT_ID = await util.getClient(),
+  CLIENT_ID = util.getClient(),
   PRODUCT_ID = mqttConfig.productId,
   LWT_TOPIC = `device/lwt/${PRODUCT_ID}/${CLIENT_ID}`,
   SUB_TOPIC = `device/get/${PRODUCT_ID}/${CLIENT_ID}`,
@@ -32,7 +32,7 @@ var client = mqtt.connect(MQTT_URL, {
 });
 
 client.on('connect', function () {
-  console.log('连接上服务器');
+  console.log('连接上服务器', CLIENT_ID);
   client.publish(LWT_TOPIC, JSON.stringify({ type: TYPES.ONLINE }), { qos: 2, retain: false });
   client.subscribe(SUB_TOPIC, { qos: 0, retain: false });
   //client.publish(PUB_TOPIC, 'Hello mqtt', { qos: 2, retain: false });
