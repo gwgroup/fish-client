@@ -63,7 +63,7 @@ function exec(body) {
     } else {
       console.log('EXEC OK:', stdout);
     }
-    ev.emit('exec', err, stdout, stderr);
+    ev.emit('exec', index, err, stdout, stderr);
   });
 }
 

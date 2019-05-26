@@ -82,8 +82,8 @@ service.on('status', function (key, value, status) {
 /**
  * 监听exec指令执行消息
  */
-service.on('exec', function (err, stdout, stderr) {
-  client.publish(PUB_TOPIC, JSON.stringify({ type: TYPES.EXEC, stdout, stderr }));
+service.on('exec', function (index, err, stdout, stderr) {
+  client.publish(PUB_TOPIC, JSON.stringify({ type: TYPES.EXEC, index, stdout, stderr }));
 });
 
 // module.exports = { client, exit };
