@@ -3,7 +3,6 @@ var mqttConfig = require('./config/index').mqtt;
 var service = require('./service');
 var util = require('./util');
 const
-  CLIENT_ID = util.getClient(),
   PRODUCT_ID = mqttConfig.productId,
   LWT_TOPIC = `device/lwt/${PRODUCT_ID}/${CLIENT_ID}`,
   SUB_TOPIC = `device/get/${PRODUCT_ID}/${CLIENT_ID}`,
@@ -15,6 +14,8 @@ const
     DEVICE_STATUS: 3003,
     EXEC: 3004
   };
+
+let CLIENT_ID = await util.getClient();
 
 var client = mqtt.connect(MQTT_URL, {
   clientId: CLIENT_ID,
