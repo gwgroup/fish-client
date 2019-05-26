@@ -8,7 +8,12 @@ const
   SUB_TOPIC = `device/get/${PRODUCT_ID}/${CLIENT_ID}`,
   PUB_TOPIC = `device/set/${PRODUCT_ID}/${CLIENT_ID}`,
   MQTT_URL = mqttConfig.url,
-  TYPES = { ONLINE: 1001, OFFLINE: 1002, DEVICE_STATUS: 3003 };
+  TYPES = {
+    ONLINE: 1001,
+    OFFLINE: 1002,
+    DEVICE_STATUS: 3003,
+    EXEC: 3004
+  };
 
 var
   client = mqtt.connect(MQTT_URL, {
@@ -45,6 +50,9 @@ client.on('message', function (topic, message) {
       case service.ACTION_CODES.CLOSE_PUMP:
         service.closePump();
         break;
+      case service.ACTION_CODES.EXEC:
+        service.exec(body);
+        break;
       default:
         console.warn('未找到要处理的类型');
         break;
@@ -63,9 +71,19 @@ client.on('message', function (topic, message) {
 //   });
 // };
 
+/**
+ * 监听设备状态变化
+ */
 service.on('status', function (key, value, status) {
   console.log(key, value, status);
   client.publish(PUB_TOPIC, JSON.stringify({ type: TYPES.DEVICE_STATUS, status }));
+});
+
+/**
+ * 监听exec指令执行消息
+ */
+service.on('exec', function (err, stdout, stderr) {
+  client.publish(PUB_TOPIC, JSON.stringify({ type: TYPES.EXEC, stdout, stderr }));
 });
 
 // module.exports = { client, exit };

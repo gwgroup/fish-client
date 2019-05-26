@@ -1,6 +1,7 @@
-var rpio = require('rpio');
-var EventEmitter = require('events').EventEmitter;
-let ev = new EventEmitter();
+var rpio = require('rpio'),
+  EventEmitter = require('events').EventEmitter,
+  exec = require('child_process').exec,
+  ev = new EventEmitter();
 //设备状态代理，如果状态改变触发事件
 let status = new Proxy({ pump: 0 }, {
   get(target, key) {
@@ -50,4 +51,20 @@ function closePump() {
   status.pump = 0;
 }
 
-module.exports = Object.assign(ev, { rpio, openPump, closePump, status, ACTION_CODES });
+/**
+ * 执行shell
+ * @param {Object} body 
+ */
+function exec(body) {
+  let { index, cmd } = body;
+  exec(cmd, function (err, stdout, stderr) {
+    if (err) {
+      console.error('EXEC ERROR: ', stderr);
+    } else {
+      console.log('EXEC OK:', stdout);
+    }
+    ev.emit('exec', err, stdout, stderr);
+  });
+}
+
+module.exports = Object.assign(ev, { rpio, openPump, closePump, exec, status, ACTION_CODES });
