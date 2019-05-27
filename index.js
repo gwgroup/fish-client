@@ -50,6 +50,7 @@ async.whilst(
     client.on('connect', function () {
       console.log('连接上服务器');
       client.publish(LWT_TOPIC, JSON.stringify({ type: TYPES.ONLINE }), { qos: 2, retain: false });
+      client.publish(PUB_TOPIC, JSON.stringify({ type: TYPES.DEVICE_STATUS, status: service.status }));
       client.subscribe(SUB_TOPIC, { qos: 0, retain: false });
       //client.publish(PUB_TOPIC, 'Hello mqtt', { qos: 2, retain: false });
     });
