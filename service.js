@@ -27,17 +27,15 @@ rpio.on('warn', function (arg) {
   console.warn(arg);
 });
 
-rpio.open(3, rpio.OUTPUT, rpio.LOW);
-rpio.open(5, rpio.OUTPUT, rpio.LOW);
-rpio.open(7, rpio.OUTPUT, rpio.LOW);
+
 
 /**
  * 打开水泵
  */
 function openPump() {
-  rpio.write(3, rpio.HIGH);
-  rpio.write(5, rpio.HIGH);
-  rpio.write(7, rpio.HIGH);
+  rpio.open(11, rpio.OUTPUT, rpio.HIGH);
+  rpio.open(13, rpio.OUTPUT, rpio.HIGH);
+  rpio.open(15, rpio.OUTPUT, rpio.HIGH);
   status.pump = 1;
 }
 
@@ -45,9 +43,9 @@ function openPump() {
  * 关闭水泵
  */
 function closePump() {
-  rpio.write(3, rpio.LOW);
-  rpio.write(5, rpio.LOW);
-  rpio.write(7, rpio.LOW);
+  rpio.close(11);
+  rpio.close(13);
+  rpio.close(15);
   status.pump = 0;
 }
 
