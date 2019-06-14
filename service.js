@@ -1,9 +1,11 @@
+var request = require('request');
+var config = require('./config/index');
 var rpio = require('rpio'),
   EventEmitter = require('events').EventEmitter,
   cmdExec = require('child_process').exec,
   ev = new EventEmitter();
 //设备状态代理，如果状态改变触发事件
-let status = new Proxy({ pump: 0 }, {
+let status = new Proxy({ pump: 0, ip: null, uptime: Date.now() }, {
   get(target, key) {
     return target[key];
   },
@@ -26,8 +28,6 @@ rpio.init({
 rpio.on('warn', function (arg) {
   console.warn(arg);
 });
-
-
 
 /**
  * 打开水泵
@@ -65,4 +65,15 @@ function exec(body) {
   });
 }
 
-module.exports = Object.assign(ev, { rpio, openPump, closePump, exec, status, ACTION_CODES });
+/**
+ * 上报IP
+ */
+function reportIP() {
+  request.get(config.get_ip_url, { timeout: 3000 }, (err, response, body) => {
+    if (!err && response.statusCode == 200) {
+      const info = JSON.parse(body);
+      status.ip = info.local_ip;
+    }
+  });
+}
+module.exports = Object.assign(ev, { rpio, openPump, closePump, reportIP, exec, status, ACTION_CODES });

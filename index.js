@@ -52,6 +52,7 @@ async.whilst(
       client.publish(LWT_TOPIC, JSON.stringify({ type: TYPES.ONLINE }), { qos: 2, retain: false });
       client.publish(PUB_TOPIC, JSON.stringify({ type: TYPES.DEVICE_STATUS, status: service.status }));
       client.subscribe(SUB_TOPIC, { qos: 0, retain: false });
+      service.reportIP();
       //client.publish(PUB_TOPIC, 'Hello mqtt', { qos: 2, retain: false });
     });
 
@@ -84,14 +85,18 @@ async.whilst(
     */
     service.on('status', function (key, value, status) {
       console.log(key, value, status);
-      client.publish(PUB_TOPIC, JSON.stringify({ type: TYPES.DEVICE_STATUS, status }));
+      if (client.connected) {
+        client.publish(PUB_TOPIC, JSON.stringify({ type: TYPES.DEVICE_STATUS, status }));
+      }
     });
 
     /**
      * 监听exec指令执行消息
      */
     service.on('exec', function (index, err, stdout, stderr) {
-      client.publish(PUB_TOPIC, JSON.stringify({ type: TYPES.EXEC, index, stdout, stderr }));
+      if (client.connected) {
+        client.publish(PUB_TOPIC, JSON.stringify({ type: TYPES.EXEC, index, stdout, stderr }));
+      }
     });
   }
 );
