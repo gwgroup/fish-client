@@ -72,7 +72,7 @@ function reportIP() {
   request.get(config.get_ip_url, { timeout: 3000 }, (err, response, body) => {
     if (!err && response.statusCode == 200) {
       const info = JSON.parse(body);
-      status.ip = info.local_ip;
+      status.ip = info.data.local_ip;
     }
   });
 }
