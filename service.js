@@ -34,8 +34,8 @@ rpio.on('warn', function (arg) {
  */
 function openPump() {
   rpio.open(11, rpio.OUTPUT, rpio.HIGH);
-  rpio.open(13, rpio.OUTPUT, rpio.HIGH);
-  rpio.open(15, rpio.OUTPUT, rpio.HIGH);
+  // rpio.open(13, rpio.OUTPUT, rpio.HIGH);
+  // rpio.open(15, rpio.OUTPUT, rpio.HIGH);
   status.pump = 1;
 }
 
@@ -44,8 +44,8 @@ function openPump() {
  */
 function closePump() {
   rpio.close(11);
-  rpio.close(13);
-  rpio.close(15);
+  // rpio.close(13);
+  // rpio.close(15);
   status.pump = 0;
 }
 

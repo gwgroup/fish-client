@@ -1,0 +1,26 @@
+#! /bin/sh 
+S_HOME=/home/work/fish-client
+SVR_NAME=fish
+case $1 in 
+    start)
+        echo "starting $SVR_NAME ..."
+        forever start $S_HOME/index.js
+        # node $S_HOME/index.js > $S_HOME/logs.out&
+        ;;
+    stop)
+        echo "stopping $SVR_NAME ..."
+        forever stop $S_HOME/index.js
+        # ps -ef|grep $SVR_NAME* |grep -v grep |awk '{print $2}'  | sed -e "s/^/kill -9 /g" | sh - 
+        ;;
+    restart)
+        "$0" stop
+        sleep 3
+        "$0" start
+        ;;
+    status)
+        ps -ef|grep $SVR_NAME*
+        ;;
+    *)       
+        echo "Service: $SVR_NAME [start|stop|restart|status]" ;;
+esac
+
