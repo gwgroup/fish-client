@@ -68,6 +68,30 @@ async.whilst(
           case service.ACTION_CODES.CLOSE_PUMP:
             service.closePump();
             break;
+          case service.ACTION_CODES.OPEN_AERATOR1:
+            service.openAerator1();
+            break;
+          case service.ACTION_CODES.CLOSE_AERATOR1:
+            service.closeAerator1();
+            break;
+          case service.ACTION_CODES.OPEN_AERATOR2:
+            service.openAerator2();
+            break;
+          case service.ACTION_CODES.CLOSE_AERATOR2:
+            service.closeAerator2();
+            break;
+          case service.ACTION_CODES.OPEN_LAMP1:
+            service.openLamp1();
+            break;
+          case service.ACTION_CODES.CLOSE_LAMP1:
+            service.closeLamp1();
+            break;
+          case service.ACTION_CODES.OPEN_LAMP2:
+            service.openLamp2();
+            break;
+          case service.ACTION_CODES.CLOSE_LAMP2:
+            service.closeLamp2();
+            break;
           case service.ACTION_CODES.EXEC:
             service.exec(body);
             break;
