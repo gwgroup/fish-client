@@ -17,7 +17,7 @@
   },
   "homepage": "https://github.com/gwgroup/fish-client#readme",
   "dependencies": {
-    "async": "^3.0.0",
+    "async": "^3.1.0",
     "mqtt": "^2.18.8",
     "request": "^2.88.0",
     "rpio": "^1.0.13"
