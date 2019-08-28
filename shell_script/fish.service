@@ -4,10 +4,10 @@ After=network.target remote-fs.target
 
 [Service]
 Type=forking
-ExecStart=forever start /home/work/fish-client/index.js
+ExecStart=/usr/local/bin/forever start /home/work/fish-client/index.js
 ExecStartPost=/bin/echo fish client start up!
-ExecReload=forever restart /home/work/fish-client/index.js
-ExecStop=forever stop /home/work/fish-client/index.js
+ExecReload=/usr/local/bin/forever restart /home/work/fish-client/index.js
+ExecStop=/usr/local/bin/forever stop /home/work/fish-client/index.js
 
 [Install]
 WantedBy=multi-user.target
