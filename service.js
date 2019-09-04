@@ -163,7 +163,11 @@ function __triggerTask(monitor, val) {
           close(element.io_code);
         } else if (element.operaction === "open") {
           if (!ioStatus[element.io_code].opened) {
-            open(element.io_code, element.duration);
+            open(element.io_code, element.duration, (err) => {
+              if (err) {
+                console.error("触发任务", "报错", element.io_code, err);
+              }
+            });
             console.log("触发任务", "启动", element.io_code, element.duration);
           } else {
             console.log("触发任务", "跳过", element.io_code);
