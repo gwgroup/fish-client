@@ -16,7 +16,7 @@ function save() {
  * @param {String} code 监听器code 
  */
 function filterTriggerWithMonitor(code) {
-  return config.trigger.find((item) => {
+  return config.trigger.filter((item) => {
     return item.monitor === code;
   });
 }
