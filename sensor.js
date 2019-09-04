@@ -105,7 +105,7 @@ function __waterTemperatureChange(data) {
 function __o2Change(data) {
   let val = null;
   if (data && data.length >= 7 && data[0] === 0x06 && data[1] === 0x03 && data[2] === 0x02) {
-    val = Math.floor((data[3] * 256 + data[4]) / 10) / 10;
+    val = Math.ceil((data[3] * 256 + data[4]) / 10) / 10;
     //console.log('o2\t',val);  
   }
   ev.emit('o2', val);
