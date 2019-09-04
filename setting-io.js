@@ -3,7 +3,7 @@ var util = require('./util'),
 
 const PATH = path.join(__dirname, '../fish-config/io.json');
 var config = Object.assign({}, util.readFromJson(PATH));
-console.log("io config", config,PATH);
+console.log("io config", config, PATH);
 /**
  * 保存配置
  */
@@ -17,7 +17,7 @@ function save() {
  * @param {String} code 
  */
 function getIoConfig(code) {
-  config.io.find((el) => { return el.code === code; });
+  return config.io.find((el) => { return el.code === code; });
 }
 
 module.exports = { config, save, getIoConfig };
