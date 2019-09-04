@@ -3,7 +3,7 @@ var mqtt = require('mqtt');
 var mqttConfig = require('./config/index').mqtt;
 var service = require('./service');
 //var util = require('./util');
-let CLIENT_ID = require('./setting-base').config.client_id;
+let CLIENT_ID = require('./setting-io').config.client_id;
 const
   PRODUCT_ID = mqttConfig.productId,
   MQTT_URL = mqttConfig.url,
