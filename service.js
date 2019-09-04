@@ -160,21 +160,14 @@ function __triggerTask(monitor, val) {
     if (element.enabled) {
       if ((element.condition === ">" && val > element.condition_val) || (element.condition === "<" && val < element.condition_val)) {
         if (element.operaction === "close") {
-          close(element.io_code, (err) => {
-            if (err) {
-              console.error("触发任务", "关闭报错", element.io_code, err);
-            }
-          });
+          if (ioStatus[element.io_code].opened) {
+            close(element.io_code, () => { });
+            console.log("触发任务", "关闭完成", element.io_code, element.duration);
+          }
         } else if (element.operaction === "open") {
           if (!ioStatus[element.io_code].opened) {
-            open(element.io_code, element.duration, (err) => {
-              if (err) {
-                console.error("触发任务", "启动报错", element.io_code, err);
-              }
-            });
-            console.log("触发任务", "启动", element.io_code, element.duration);
-          } else {
-            console.log("触发任务", "跳过", element.io_code);
+            open(element.io_code, element.duration, () => { });
+            console.log("触发任务", "启动成功", element.io_code, element.duration);
           }
         }
       }
