@@ -3,12 +3,13 @@ var util = require('./util'),
 
 const PATH = path.join(__dirname, '../fish-config/io.json');
 var config = Object.assign({}, util.readFromJson(PATH));
+console.log("io config", config);
 /**
  * 保存配置
  */
 function save() {
   config.update_time = util.dateFormatWithUTC(new Date(), 'yyyy-MM-dd hh:mm:ss');
-  util.writeToJson(PATH,config);
+  util.writeToJson(PATH, config);
 }
 
 /**
