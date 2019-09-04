@@ -160,12 +160,12 @@ function __triggerTask(monitor, val) {
     if (element.enabled) {
       if ((element.condition === ">" && val > element.condition_val) || (element.condition === "<" && val < element.condition_val)) {
         if (element.operaction === "close") {
-          if (ioStatus[element.io_code].opened) {
+          if (status[element.io_code].opened) {
             close(element.io_code, () => { });
             console.log("触发任务", "关闭完成", element.io_code, element.duration);
           }
         } else if (element.operaction === "open") {
-          if (!ioStatus[element.io_code].opened) {
+          if (!status[element.io_code].opened) {
             open(element.io_code, element.duration, () => { });
             console.log("触发任务", "启动成功", element.io_code, element.duration);
           }
