@@ -1,7 +1,7 @@
 var util = require('./util'),
   path = require('path');
 
-const PATH = path.join(__dirname, '/json/plan.json');
+const PATH = path.join(__dirname, '../fish-config/plan.json');
 var config = Object.assign({}, util.readFromJson(PATH));
 /**
  * 保存配置
