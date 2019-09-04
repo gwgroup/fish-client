@@ -11,7 +11,8 @@ const
     ONLINE: 1001,
     OFFLINE: 1002,
     DEVICE_STATUS: 3003,
-    EXEC: 3004
+    EXEC: 3004,
+    RPC: 5001
   };
 
 console.log('获取到客户端标识', CLIENT_ID);
@@ -48,18 +49,39 @@ client.on('message', function (topic, message) {
     console.log(topic, message.toString('utf8'));
     let //topicObj = util.parseTopic(topic),
       body = JSON.parse(message.toString('utf8'));
-    switch (body.type) {
+    switch (body.sub_type) {
       case service.ACTION_CODES.OPEN:
         //打开IO
-        service.open(body.io_code, body.duration);
+        service.open(body.io_code, body.duration, (err) => {
+          rpc(body.id, err);
+        });
         break;
       case service.ACTION_CODES.CLOSE:
         //关闭IO
-        service.close(body.io_code);
+        service.close(body.io_code, (err) => {
+          rpc(body.id, err);
+        });
+        break;
+      case service.ACTION_CODES.GET_IO_SETTING:
+        //获取io设置
+        let data = service.getIoSetting(body);
+        rpc(body.id, undefined, data);
+        break;
+      case service.ACTION_CODES.GET_PLAN_SETTING:
+        //获取计划设置
+        let data = service.getPlanSetting(body);
+        rpc(body.id, undefined, data);
+        break;
+      case service.ACTION_CODES.GET_TRIGGER_SETTING:
+        //获取触发任务设置
+        let data = service.getTriggerSetting(body);
+        rpc(body.id, undefined, data);
         break;
       case service.ACTION_CODES.EXEC:
         //执行cmd
-        service.exec(body);
+        service.exec(body, (err, stdout, stderr) => {
+          rpc(body.id, err, { stdout, stderr });
+        });
         break;
       default:
         console.warn('未找到要处理的类型');
@@ -83,11 +105,18 @@ service.on('status', function (key, value) {
 });
 
 /**
- * 监听exec指令执行消息
+ * RPC 返回
+ * @param {String} id 
+ * @param {Object} data 
  */
-service.on('exec', function (index, err, stdout, stderr) {
-  if (client.connected) {
-    client.publish(PUB_TOPIC, JSON.stringify({ type: TYPES.EXEC, index, stdout, stderr }));
+function rpc(id, err, data) {
+  let error = undefined;
+  if (err) {
+    error = { message: err.message, code: err.code };
+    console.error(err);
   }
-});
+  if (client.connected) {
+    client.publish(PUB_TOPIC, JSON.stringify({ type: TYPES.RPC, id, error, data }));
+  }
+}
 

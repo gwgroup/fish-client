@@ -4,10 +4,13 @@ var request = require('request'),
   EventEmitter = require('events').EventEmitter,
   cmdExec = require('child_process').exec,
   ev = new EventEmitter(),
-  baseConfig = require('./setting-base'),
-  sensor = require('./sensor');
+  ioConfig = require('./setting-io'),
+  triggerConfig = require('./setting-trigger'),
+  planConfig = require('./setting-plan'),
+  sensor = require('./sensor'),
+  util = require('./util');
 
-let ACTION_CODES = Object.freeze({ EXEC: 3004, OPEN: 4001, CLOSE: 4002 });
+let ACTION_CODES = Object.freeze({ EXEC: 3004, OPEN: 4001, CLOSE: 4002, GET_IO_SETTING: 4011, GET_PLAN_SETTING: 4012, GET_TRIGGER_SETTING: 4013 });
 
 //===================初始化IO====================
 //初始化RPIO
@@ -21,7 +24,7 @@ rpio.on('warn', function (arg) {
 });
 
 let baseStatus = { water_temperature: null, o2: null, ph: null, uptime: Date.now() };
-baseConfig.config.io.forEach(element => {
+ioConfig.config.io.forEach(element => {
   baseStatus[element.code] = { opened: 0, start_time: null, duration: null, close_interval: undefined };
 });
 
@@ -50,20 +53,17 @@ status.__emit = function (key) {
  * @param {String} code 
  * @param {int} duration 时长（秒）
  */
-function open(code, duration) {
-  let baseIoConfig = baseConfig.getIoConfig(code);
+function open(code, duration, cb) {
+  let baseIoConfig = ioConfig.getIoConfig(code);
   let ioStatus = status[baseIoConfig.code];
   if (!baseIoConfig) {
-    console.log('未找到配置');
-    return;
+    return cb(util.BusinessError.build(40011, '未找到配置'));
   }
   if (!baseIoConfig.enabled) {
-    console.log('端口已被禁用');
-    return;
+    return cb(util.BusinessError.build(40012, '设备已被禁用'));
   }
   if (ioStatus.opened) {
-    console.log('重复打开端口');
-    return;
+    return cb(util.BusinessError.build(40013, '不能重复打开设备'));
   }
   rpio.open(baseIoConfig.pin, rpio.OUTPUT, rpio.HIGH);
   ioStatus.opened = 1;
@@ -76,21 +76,23 @@ function open(code, duration) {
     }, duration * 1000, baseIoConfig.code);
   }
   status.__emit(baseIoConfig.code, ioStatus);
+  return cb();
 }
 
 /**
  * 关闭 
  * @param {String} code 
  */
-function close(code) {
-  let baseIoConfig = baseConfig.getIoConfig(code);
+function close(code, cb) {
+  let baseIoConfig = ioConfig.getIoConfig(code);
   if (!baseIoConfig) {
-    console.log('未找到配置');
-    return;
+    return cb(util.BusinessError.build(40021, '未找到配置'));
   }
   if (!baseIoConfig.enabled) {
-    console.log('端口已被禁用');
-    return;
+    return cb(util.BusinessError.build(40022, '设备已被禁用'));
+  }
+  if (!ioStatus.opened) {
+    return cb(util.BusinessError.build(40023, '不需要重复关闭设备'));
   }
   rpio.open(baseIoConfig.pin, rpio.OUTPUT, rpio.LOW);
   ioStatus = status[baseIoConfig.code];
@@ -102,21 +104,17 @@ function close(code) {
   }
   ioStatus.close_interval = null;
   status.__emit(baseIoConfig.code, ioStatus);
+  cb();
 }
 
 /**
  * 执行shell
  * @param {Object} body 
  */
-function exec(body) {
-  let { index, cmd } = body;
+function exec(body, cb) {
+  let { cmd } = body;
   cmdExec(cmd, function (err, stdout, stderr) {
-    if (err) {
-      console.error('EXEC ERROR: ', stderr);
-    } else {
-      console.log('EXEC OK:', stdout);
-    }
-    ev.emit('exec', index, err, stdout, stderr);
+    cb(err, stdout, stderr);
   });
 }
 
@@ -124,7 +122,7 @@ function exec(body) {
  * 上报IP
  */
 function reportIP(client_id) {
-  request.get(config.get_ip_url, { timeout: 3000 }, (err, response, body) => {
+  request.get(config.get_ip_url + '?client_id=' + client_id, { timeout: 3000 }, (err, response, body) => {
     if (!err && response.statusCode == 200) {
       const info = JSON.parse(body);
       console.log('上报IP', info);
@@ -136,14 +134,54 @@ function reportIP(client_id) {
 //监听传感器状态
 sensor.on('water_temperature', (val) => {
   status['water_temperature'] = val;
+  __triggerTask("water_temperature", val);
 });
 
 sensor.on('o2', (val) => {
   status['o2'] = val;
+  __triggerTask("o2", val);
 });
 
 sensor.on('ph', (val) => {
   status['ph'] = val;
+  __triggerTask("ph", val);
 });
+/**
+ * 触发任务
+ * @param {String} monitor 
+ * @param {Number} val 
+ */
+function __triggerTask(monitor, val) {
+  if (val === null) {
+    return;
+  }
+  let ary = triggerConfig.filterTriggerWithMonitor(monitor);
+  ary.forEach((element) => {
+    if (element.enabled) {
+      if ((element.condition === ">" && val > element.condition_val) || (element.condition === "<" && val < element.condition_val)) {
+        if (element.operaction === "close") {
+          close(element.io_code);
+        } else if (element.operaction === "open") {
+          if (!ioStatus[element.io_code].opened) {
+            open(element.io_code, element.duration);
+            console.log("触发任务", "启动", element.io_code, element.duration);
+          } else {
+            console.log("触发任务", "跳过", element.io_code);
+          }
+        }
+      }
+    }
+  });
+}
 
-module.exports = Object.assign(ev, { rpio, open, close, reportIP, exec, status, ACTION_CODES });
+function getIoSetting(body) {
+  return ioConfig.config;
+}
+function getPlanSetting(body) {
+  return planConfig.config;
+}
+function getTriggerSetting(body) {
+  return triggerConfig.config;
+}
+
+module.exports = Object.assign(ev, { rpio, open, close, reportIP, exec, status, getIoSetting, getPlanSetting, getTriggerSetting, ACTION_CODES });

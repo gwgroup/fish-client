@@ -1,6 +1,16 @@
 var os = require("os");
 fs = require('fs');
 
+class BusinessError extends Error {
+  constructor(code, message) {
+    super(message);
+    this.code = code;
+  }
+  static build(code, message) {
+    return new BusinessError(code, message);
+  }
+}
+
 /**
  * 获取MAC
  */
@@ -68,4 +78,4 @@ function writeToJson(path, obj) {
   }
 }
 
-module.exports = { getClient, dateFormatWithUTC, readFromJson, writeToJson };
+module.exports = { getClient, dateFormatWithUTC, readFromJson, writeToJson, BusinessError };
