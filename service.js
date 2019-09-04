@@ -85,6 +85,7 @@ function open(code, duration, cb) {
  */
 function close(code, cb) {
   let baseIoConfig = ioConfig.getIoConfig(code);
+  let ioStatus = status[baseIoConfig.code];
   if (!baseIoConfig) {
     return cb(util.BusinessError.build(40021, '未找到配置'));
   }
@@ -95,7 +96,6 @@ function close(code, cb) {
     return cb(util.BusinessError.build(40023, '不需要重复关闭设备'));
   }
   rpio.open(baseIoConfig.pin, rpio.OUTPUT, rpio.LOW);
-  ioStatus = status[baseIoConfig.code];
   ioStatus.opened = 0;
   ioStatus.start_time = null;
   ioStatus.duration = null;
