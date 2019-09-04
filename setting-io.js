@@ -3,7 +3,7 @@ var util = require('./util'),
 
 const PATH = path.join(__dirname, '../fish-config/io.json');
 var config = Object.assign({}, util.readFromJson(PATH));
-console.log("io config", config);
+console.log("io config", config,PATH);
 /**
  * 保存配置
  */
