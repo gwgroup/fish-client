@@ -3,7 +3,7 @@ var util = require('./util'),
 
 const PATH = path.join(__dirname, '../fish-config/io.json');
 var config = Object.assign({}, util.readFromJson(PATH));
-let ACTION_CODES = Object.freeze({ ADD_IO: 8001, REMOVE_IO: 8002, ENABLE_IO: 8003, DISABLE_IO: 8004, GET_ALL_IO: 8005 });
+let ACTION_CODES = Object.freeze({ ADD_IO: 8001, REMOVE_IO: 8002, ENABLE_IO: 8003, DISABLE_IO: 8004, GET_ALL_IO: 8005, RENAME_IO: 8006, CALIBRATION_FEEDER: 8007 });
 
 let EventEmitter = require('events').EventEmitter,
   ev = new EventEmitter();
@@ -65,6 +65,7 @@ function enable(code) {
     console.warn("IO已经不存在，不能启用", code);
   }
 }
+
 /**
  * 禁用IO
  * @param {String} code 
@@ -79,6 +80,36 @@ function disable(code) {
     console.warn("IO已经不存在，不能禁用", code);
   }
 }
+/**
+ * 重命名
+ * @param {String} code 
+ * @param {String} name 
+ */
+function rename(code, name) {
+  let io = getIoConfig(code);
+  if (io) {
+    io.name = name;
+    save();
+    ev.emit("rename", io);
+  } else {
+    console.warn("IO已经不存在，修改名字", code);
+  }
+}
+
+/**
+ * 校准投喂机
+ * @param {String} code 编号
+ * @param {Number} weightPerSecond 每秒钟饲料克数 
+ */
+function calibrationFeeder(code, weightPerSecond) {
+  let item = config.io.find((el) => { return el.code === code && el.type === "feeder"; });
+  if (item) {
+    item.weightPerSecond = weightPerSecond;
+    save();
+  } else {
+    console.warn("IO已经不存在或类型不正确", code);
+  }
+}
 
 /**
  * 获取所有IO
@@ -87,4 +118,4 @@ function getAll() {
   return config.io;
 }
 
-module.exports = Object.assign(ev, { config, save, getIoConfig, add, remove, enable, disable, getAll, ACTION_CODES });
+module.exports = Object.assign(ev, { config, save, getIoConfig, add, remove, enable, disable, rename, calibrationFeeder, getAll, ACTION_CODES });

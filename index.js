@@ -145,6 +145,16 @@ client.on('message', function (topic, message) {
         ioSetting.disable(body.io.code);
         rpc(body.id);
         break;
+      case ioSetting.ACTION_CODES.RENAME_IO:
+        //重命名IO
+        ioSetting.rename(body.io.code, body.io.name);
+        rpc(body.id);
+        break;
+      case ioSetting.ACTION_CODES.CALIBRATION_FEEDER:
+        //校准投喂量
+        ioSetting.calibrationFeeder(body.io.code, body.io.weightPerSecond);
+        rpc(body.id);
+        break;
       default:
         console.warn('未找到要处理的类型');
         break;
