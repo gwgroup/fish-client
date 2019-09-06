@@ -31,7 +31,7 @@ function getIoConfig(code) {
  * @param {Object} io 
  */
 function add(io) {
-  let exitsio = findPlanWithID(io.code);
+  let exitsio = getIoConfig(io.code);
   if (exitsio) {
     return console.warn('IO已经存在，不需重复添加', io.code);
   }
