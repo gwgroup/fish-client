@@ -1,49 +1,61 @@
 var schedule = require('node-schedule'),
-planSetting=require('./setting-plan');
-//planSetting.config
-
-
-// var tasks = [];
-
-// /**
-//  * 启动调度
-//  */
-// var run = function () {
-//   console.log("1.初始化Schedule服务");
-//   tasks.forEach((item) => {
-//     schedule.scheduleJob(item.name, item.cron, item.handler);
-//   });
-// };
-
-// module.exports = { schedule, tasks, run };
-
-// // 清除无效数据
-// tasks.push({
-//   name: 'CLEAR_DATA',
-//   cron: '3 * * *',
-//   handler: function () {
-//     console.log('CLEAR_DATA','执行清除无效数据任务');
-//   }
-// });
-
-function add(config){
-
+  planSetting = require('./setting-plan'),
+  service = require('./service');
+/**
+ * 添加任务到调度
+ * @param {Object} task 
+ */
+function __addPlanToSchedule(task) {
+  let cron = __buildCronWithPlan(task);
+  schedule.scheduleJob(task.id, cron, __planHandler);
 }
 
-function remove(id){
-
+/**
+ * 任务处理程序
+ * @param {String} fireTime 
+ * @param {Object} job 
+ */
+function __planHandler(fireTime, job) {
+  console.log(fireTime, job.name);
+  let id = job.name,
+    task = planSetting.findPlanWithID(id);
+  if (task && task.enabled) {
+    service.open(task.io_code, task.duration, (err) => {
+      if (err) {
+        console.warn("任务启动失败，", err.message);
+      }
+    });
+  } else {
+    console.warn('已被禁止或移除的任务', id);
+  }
 }
 
-function enable(id){
-
+/**
+ * 生成cron 根据任务
+ * @param {Object} plan 
+ */
+function __buildCronWithPlan(plan) {
+  switch (plan.per) {
+    case "month":
+      return `${plan.second} ${plan.minute} ${plan.hour} ${plan.day_of_month} * *`;
+    case "week":
+      return `${plan.second} ${plan.minute} ${plan.hour} * * ${plan.day_of_week}`;
+    case "day":
+      return `${plan.second} ${plan.minute} ${plan.hour} * * *`;
+  }
 }
 
-function disable(id){
+//定时任务配置增加
+planSetting.on('add_plan', function (task) {
+  __addPlanToSchedule(task);
+});
 
-}
+//定时任务配置移除
+planSetting.on('remove_plan', function (id) {
+  schedule.cancelJob(id);
+});
 
-function getAll(){
+//初始化任务
+planSetting.config.plan.forEach(__addPlanToSchedule);
 
-}
-
-module.exports={add,remove,enable,disable,getAll};
+module.exports = {};

@@ -2,6 +2,11 @@
 var mqtt = require('mqtt');
 var mqttConfig = require('./config/index').mqtt;
 var service = require('./service');
+var planSetting = require('./setting-plan');
+var triggerSetting = require('./setting-trigger');
+var ioSetting = require('./setting-io');
+
+require('./schedule');
 //var util = require('./util');
 let CLIENT_ID = require('./setting-io').config.client_id;
 const
@@ -62,26 +67,86 @@ client.on('message', function (topic, message) {
           rpc(body.id, err);
         });
         break;
-      case service.ACTION_CODES.GET_IO_SETTING:
-        //获取io设置
-        let data = service.getIoSetting(body);
-        rpc(body.id, undefined, data);
-        break;
-      case service.ACTION_CODES.GET_PLAN_SETTING:
-        //获取计划设置
-        let data = service.getPlanSetting(body);
-        rpc(body.id, undefined, data);
-        break;
-      case service.ACTION_CODES.GET_TRIGGER_SETTING:
-        //获取触发任务设置
-        let data = service.getTriggerSetting(body);
-        rpc(body.id, undefined, data);
-        break;
       case service.ACTION_CODES.EXEC:
         //执行cmd
         service.exec(body, (err, stdout, stderr) => {
           rpc(body.id, err, { stdout, stderr });
         });
+        break;
+      case planSetting.ACTION_CODES.GET_ALL_PLAN:
+        //获取所有定时任务
+        let data = planSetting.getAll();
+        rpc(body.id, undefined, data);
+        break;
+      case planSetting.ACTION_CODES.ADD_PLAN:
+        //添加定时任务
+        planSetting.add(body.plan);
+        rpc(body.id);
+        break;
+      case planSetting.ACTION_CODES.REMOVE_PLAN:
+        //移除定时任务
+        planSetting.remove(body.plan.id);
+        rpc(body.id);
+        break;
+      case planSetting.ACTION_CODES.ENABLE_PLAN:
+        //启用定时任务
+        planSetting.enable(body.plan.id);
+        rpc(body.id);
+        break;
+      case planSetting.ACTION_CODES.DISABLE_PLAN:
+        //禁用定时任务
+        planSetting.disable(body.plan.id);
+        rpc(body.id);
+        break;
+      case triggerSetting.ACTION_CODES.GET_ALL_TRIGGER:
+        //获取所有触发任务
+        let data = triggerSetting.getAll();
+        rpc(body.id, undefined, data);
+        break;
+      case triggerSetting.ACTION_CODES.ADD_TRIGGER:
+        //添加触发任务
+        triggerSetting.add(body.trigger);
+        rpc(body.id);
+        break;
+      case triggerSetting.ACTION_CODES.REMOVE_TRIGGER:
+        //移除触发任务
+        triggerSetting.remove(body.trigger.id);
+        rpc(body.id);
+        break;
+      case triggerSetting.ACTION_CODES.ENABLE_TRIGGER:
+        //启用触发任务
+        triggerSetting.enable(body.trigger.id);
+        rpc(body.id);
+        break;
+      case triggerSetting.ACTION_CODES.DISABLE_TRIGGER:
+        //禁用触发任务
+        triggerSetting.disable(body.trigger.id);
+        rpc(body.id);
+        break;
+      case ioSetting.ACTION_CODES.GET_ALL_IO:
+        //获取所有IO
+        let data = ioSetting.getAll();
+        rpc(body.id, undefined, data);
+        break;
+      case ioSetting.ACTION_CODES.ADD_IO:
+        //添加IO
+        ioSetting.add(body.io);
+        rpc(body.id);
+        break;
+      case ioSetting.ACTION_CODES.REMOVE_IO:
+        //移除io
+        ioSetting.remove(body.io.code);
+        rpc(body.id);
+        break;
+      case ioSetting.ACTION_CODES.ENABLE_IO:
+        //启用io
+        ioSetting.enable(body.io.code);
+        rpc(body.id);
+        break;
+      case ioSetting.ACTION_CODES.DISABLE_IO:
+        //禁用io
+        ioSetting.disable(body.io.code);
+        rpc(body.id);
         break;
       default:
         console.warn('未找到要处理的类型');

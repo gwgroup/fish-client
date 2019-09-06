@@ -6,11 +6,10 @@ var request = require('request'),
   ev = new EventEmitter(),
   ioConfig = require('./setting-io'),
   triggerConfig = require('./setting-trigger'),
-  planConfig = require('./setting-plan'),
   sensor = require('./sensor'),
   util = require('./util');
 
-let ACTION_CODES = Object.freeze({ EXEC: 3004, OPEN: 4001, CLOSE: 4002, GET_IO_SETTING: 4011, GET_PLAN_SETTING: 4012, GET_TRIGGER_SETTING: 4013 });
+let ACTION_CODES = Object.freeze({ EXEC: 3004, OPEN: 4001, CLOSE: 4002 });
 
 //===================初始化IO====================
 //初始化RPIO
@@ -106,7 +105,6 @@ function close(code, cb) {
   status.__emit(baseIoConfig.code, ioStatus);
   cb();
 }
-
 /**
  * 执行shell
  * @param {Object} body 
@@ -157,7 +155,6 @@ function __triggerTask(monitor, val) {
   }
   let ary = triggerConfig.filterTriggerWithMonitor(monitor);
   ary.forEach((element) => {
-    if (element.enabled) {
       if ((element.condition === ">" && val > element.condition_val) || (element.condition === "<" && val < element.condition_val)) {
         if (element.operaction === "close") {
           if (status[element.io_code].opened) {
@@ -171,18 +168,7 @@ function __triggerTask(monitor, val) {
           }
         }
       }
-    }
   });
 }
 
-function getIoSetting(body) {
-  return ioConfig.config;
-}
-function getPlanSetting(body) {
-  return planConfig.config;
-}
-function getTriggerSetting(body) {
-  return triggerConfig.config;
-}
-
-module.exports = Object.assign(ev, { rpio, open, close, reportIP, exec, status, getIoSetting, getPlanSetting, getTriggerSetting, ACTION_CODES });
+module.exports = Object.assign(ev, { rpio, open, close, reportIP, exec, status, ACTION_CODES });
