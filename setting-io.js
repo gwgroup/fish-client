@@ -3,7 +3,7 @@ var util = require('./util'),
 
 const PATH = path.join(__dirname, '../fish-config/io.json');
 var config = Object.assign({}, util.readFromJson(PATH));
-let ACTION_CODES = Object.freeze({ ADD_IO: 7001, REMOVE_IO: 7002, ENABLE_IO: 7003, DISABLE_IO: 7004, GET_ALL_IO: 7005 });
+let ACTION_CODES = Object.freeze({ ADD_IO: 8001, REMOVE_IO: 8002, ENABLE_IO: 8003, DISABLE_IO: 8004, GET_ALL_IO: 8005 });
 
 let EventEmitter = require('events').EventEmitter,
   ev = new EventEmitter();
