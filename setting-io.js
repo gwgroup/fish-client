@@ -45,9 +45,9 @@ function add(io) {
  * @param {String} code 
  */
 function remove(code) {
-  let index = config.plan.findIndex((el) => { el.code === code; });
+  let index = config.io.findIndex((el) => { el.code === code; });
   if (index === -1) { return; }
-  config.plan.splice(index, 1);
+  config.io.splice(index, 1);
   save();
   ev.emit("remove_io", code);
 }
