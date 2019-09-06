@@ -88,4 +88,4 @@ function disable(id) {
 function getAll() {
   return config.trigger;
 }
-module.exports = { config, save, filterTriggerWithMonitor, add, remove, enable, disable, getAll };
+module.exports = { config, save, filterTriggerWithMonitor, ACTION_CODES, add, remove, enable, disable, getAll };
