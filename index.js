@@ -52,8 +52,7 @@ client.on('connect', function () {
 client.on('message', function (topic, message) {
   try {
     console.log(topic, message.toString('utf8'));
-    let //topicObj = util.parseTopic(topic),
-      body = JSON.parse(message.toString('utf8'));
+    body = JSON.parse(message.toString('utf8'));
     switch (body.sub_type) {
       case service.ACTION_CODES.OPEN:
         //打开IO
@@ -75,8 +74,7 @@ client.on('message', function (topic, message) {
         break;
       case planSetting.ACTION_CODES.GET_ALL_PLAN:
         //获取所有定时任务
-        let data = planSetting.getAll();
-        rpc(body.id, undefined, data);
+        rpc(body.id, undefined, planSetting.getAll());
         break;
       case planSetting.ACTION_CODES.ADD_PLAN:
         //添加定时任务
@@ -125,8 +123,7 @@ client.on('message', function (topic, message) {
         break;
       case ioSetting.ACTION_CODES.GET_ALL_IO:
         //获取所有IO
-        let data = ioSetting.getAll();
-        rpc(body.id, undefined, data);
+        rpc(body.id, undefined, ioSetting.getAll());
         break;
       case ioSetting.ACTION_CODES.ADD_IO:
         //添加IO
