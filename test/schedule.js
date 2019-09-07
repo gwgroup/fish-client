@@ -3,7 +3,7 @@ var schedule = require('node-schedule');
 var task={id:"abc",cron:'*/5 * * * * *'};
 
 schedule.scheduleJob(task.id,task.cron, function(fireTime){
-  console.log(fireTime);
+  console.log(fireTime,this);
 });
 console.log(schedule.scheduledJobs);
 setTimeout(() => {

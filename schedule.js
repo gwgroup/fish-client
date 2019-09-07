@@ -15,7 +15,8 @@ function __addPlanToSchedule(task) {
  * @param {String} fireTime 
  * @param {Object} job 
  */
-function __planHandler(fireTime, job) {
+function __planHandler(fireTime) {
+  let job=this;
   console.log(fireTime, job.name);
   let id = job.name,
     task = planSetting.findPlanWithID(id);
