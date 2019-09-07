@@ -2,7 +2,7 @@ var SerialPort = require('serialport'),
   async = require('async'),
   EventEmitter = require('events').EventEmitter,
   ev = new EventEmitter(),
-  port = new SerialPort('/dev/ttyAMA0', { baudRate: 9600 }, function (err) {
+  port = new SerialPort('/dev/ttyS0', { baudRate: 9600 }, function (err) {
     if (err) {
       return console.error('传感器', '连接串口失败', err.message);
     }
