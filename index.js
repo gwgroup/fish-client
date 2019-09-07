@@ -17,6 +17,7 @@ const
     OFFLINE: 1002,
     DEVICE_STATUS: 3003,
     EXEC: 3004,
+    REPORT: 3005,
     RPC: 5001
   };
 
@@ -173,6 +174,14 @@ service.on('status', function (key, value) {
   status[key] = value;
   if (client.connected) {
     client.publish(PUB_TOPIC, JSON.stringify({ type: TYPES.DEVICE_STATUS, status }));
+  }
+});
+/**
+* 监听设备io关闭时产生的报表
+*/
+service.on('report', function (report) {
+  if (client.connected) {
+    client.publish(PUB_TOPIC, JSON.stringify({ type: TYPES.REPORT, report }));
   }
 });
 

@@ -88,12 +88,14 @@ function close(code, cb) {
   if (!baseIoConfig) {
     return cb(util.BusinessError.build(40021, '未找到配置'));
   }
-  if (!baseIoConfig.enabled) {
-    return cb(util.BusinessError.build(40022, '设备已被禁用'));
-  }
+  // if (!baseIoConfig.enabled) {
+  //   return cb(util.BusinessError.build(40022, '设备已被禁用'));
+  // }
   if (!ioStatus.opened) {
     return cb(util.BusinessError.build(40023, '不需要重复关闭设备'));
   }
+
+  let reportObject = { start_time: ioStatus.start_time, end_time: Date.now(), plan_duration: ioStatus.duration, io_code: code, io_name: baseIoConfig.name, io_type: baseIoConfig.type, weight_per_second: baseIoConfig.weight_per_second };
   rpio.open(baseIoConfig.pin, rpio.OUTPUT, rpio.LOW);
   ioStatus.opened = 0;
   ioStatus.start_time = null;
@@ -103,7 +105,9 @@ function close(code, cb) {
   }
   ioStatus.close_interval = null;
   status.__emit(baseIoConfig.code, ioStatus);
+  ev.emit("report", reportObject);
   cb();
+
 }
 /**
  * 执行shell
@@ -155,19 +159,19 @@ function __triggerTask(monitor, val) {
   }
   let ary = triggerConfig.filterTriggerWithMonitor(monitor);
   ary.forEach((element) => {
-      if ((element.condition === ">" && val > element.condition_val) || (element.condition === "<" && val < element.condition_val)) {
-        if (element.operaction === "close") {
-          if (status[element.io_code].opened) {
-            close(element.io_code, () => { });
-            console.log("触发任务", "关闭完成", element.io_code, element.duration);
-          }
-        } else if (element.operaction === "open") {
-          if (!status[element.io_code].opened) {
-            open(element.io_code, element.duration, () => { });
-            console.log("触发任务", "启动成功", element.io_code, element.duration);
-          }
+    if ((element.condition === ">" && val > element.condition_val) || (element.condition === "<" && val < element.condition_val)) {
+      if (element.operaction === "close") {
+        if (status[element.io_code].opened) {
+          close(element.io_code, () => { });
+          console.log("触发任务", "关闭完成", element.io_code, element.duration);
+        }
+      } else if (element.operaction === "open") {
+        if (!status[element.io_code].opened) {
+          open(element.io_code, element.duration, () => { });
+          console.log("触发任务", "启动成功", element.io_code, element.duration);
         }
       }
+    }
   });
 }
 
