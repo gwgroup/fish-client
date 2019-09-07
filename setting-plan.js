@@ -39,7 +39,7 @@ function add(plan) {
  * @param {String} id 
  */
 function remove(id) {
-  let index = config.plan.findIndex((el) => { el.id === id; });
+  let index = config.plan.findIndex((el) => { return el.id === id; });
   if (index === -1) { return; }
   config.plan.splice(index, 1);
   save();

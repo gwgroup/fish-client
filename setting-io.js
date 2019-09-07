@@ -45,7 +45,7 @@ function add(io) {
  * @param {String} code 
  */
 function remove(code) {
-  let index = config.io.findIndex((el) => { el.code === code; });
+  let index = config.io.findIndex((el) => { return el.code === code; });
   if (index === -1) { return; }
   config.io.splice(index, 1);
   save();

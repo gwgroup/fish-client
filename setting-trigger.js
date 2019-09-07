@@ -49,7 +49,6 @@ function add(trigger) {
  */
 function remove(id) {
   let index = config.trigger.findIndex((el) => { return el.id === id; });
-  console.log("index",index,id);
   if (index === -1) { return; }
   config.trigger.splice(index, 1);
   save();
