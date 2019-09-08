@@ -22,9 +22,11 @@ rpio.on('warn', function (arg) {
   console.warn(arg);
 });
 
-let baseStatus = { water_temperature: null, o2: null, ph: null, uptime: Date.now() };
+let baseStatus = { water_temperature: null, o2: null, ph: null, uptime: Date.now() },
+  baseToDie = {};
 ioConfig.config.io.forEach(element => {
-  baseStatus[element.code] = { opened: 0, start_time: null, duration: null, close_interval: undefined };
+  baseStatus[element.code] = { opened: 0, start_time: null, duration: null };
+  baseToDie[element.code] = null;
 });
 
 //设备状态代理，如果状态改变触发事件
@@ -70,8 +72,8 @@ function open(code, duration, cb) {
   if (duration) {
     //定时关闭
     ioStatus.duration = duration;
-    ioStatus.close_interval = setTimeout((code) => {
-      close(code,()=>{});
+    baseToDie[code] = setTimeout((code) => {
+      close(code, () => { });
     }, duration * 1000, baseIoConfig.code);
   }
   status.__emit(baseIoConfig.code, ioStatus);
@@ -100,10 +102,10 @@ function close(code, cb) {
   ioStatus.opened = 0;
   ioStatus.start_time = null;
   ioStatus.duration = null;
-  if (ioStatus.close_interval) {
-    clearTimeout(ioStatus.close_interval);
+  if (baseToDie[code]) {
+    clearTimeout(baseToDie[code]);
   }
-  ioStatus.close_interval = null;
+  baseToDie[code] = null;
   status.__emit(baseIoConfig.code, ioStatus);
   ev.emit("report", reportObject);
   cb();
