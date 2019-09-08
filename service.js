@@ -71,7 +71,7 @@ function open(code, duration, cb) {
     //定时关闭
     ioStatus.duration = duration;
     ioStatus.close_interval = setTimeout((code) => {
-      close(code);
+      close(code,()=>{});
     }, duration * 1000, baseIoConfig.code);
   }
   status.__emit(baseIoConfig.code, ioStatus);
@@ -107,7 +107,6 @@ function close(code, cb) {
   status.__emit(baseIoConfig.code, ioStatus);
   ev.emit("report", reportObject);
   cb();
-
 }
 /**
  * 执行shell
