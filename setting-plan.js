@@ -1,6 +1,6 @@
 var util = require('./util'),
   path = require('path');
-let ACTION_CODES = Object.freeze({ ADD_PLAN: 6001, REMOVE_PLAN: 6002, ENABLE_PLAN: 6003, DISABLE_PLAN: 6004, GET_ALL_PLAN: 6005 });
+let ACTION_CODES = Object.freeze({ ADD_PLAN: 6001, REMOVE_PLAN: 6002, ENABLE_PLAN: 6003, DISABLE_PLAN: 6004, GET_ALL_PLAN: 6005, EDIT_PLAN: 6009 });
 const PATH = path.join(__dirname, '../fish-config/plan.json');
 var config = Object.assign({}, util.readFromJson(PATH));
 let EventEmitter = require('events').EventEmitter,
@@ -45,6 +45,7 @@ function remove(id) {
   save();
   ev.emit("remove_plan", id);
 }
+
 /**
  * 启用任务
  * @param {String} id 
@@ -58,6 +59,7 @@ function enable(id) {
     console.warn("任务已经不存在，不能启用", id);
   }
 }
+
 /**
  * 禁用任务
  * @param {String} id 
@@ -79,4 +81,13 @@ function getAll() {
   return config.plan;
 }
 
-module.exports = Object.assign(ev, { config, save, findPlanWithID, ACTION_CODES, add, remove, enable, disable, getAll });
+/**
+ * 修改任务
+ * @param {Object} plan 
+ */
+function edit(plan) {
+  remove(plan.id);
+  add(plan);
+}
+
+module.exports = Object.assign(ev, { config, save, findPlanWithID, ACTION_CODES, add, remove, enable, disable, getAll, edit });

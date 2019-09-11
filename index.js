@@ -97,6 +97,11 @@ client.on('message', function (topic, message) {
         planSetting.disable(body.plan.id);
         rpc(body.id);
         break;
+      case planSetting.ACTION_CODES.EDIT_PLAN:
+        //修改定时任务
+        planSetting.edit(body.plan);
+        rpc(body.id);
+        break;
       case triggerSetting.ACTION_CODES.GET_ALL_TRIGGER:
         //获取所有触发任务
         let data = triggerSetting.getAll();
@@ -120,6 +125,11 @@ client.on('message', function (topic, message) {
       case triggerSetting.ACTION_CODES.DISABLE_TRIGGER:
         //禁用触发任务
         triggerSetting.disable(body.trigger.id);
+        rpc(body.id);
+        break;
+      case triggerSetting.ACTION_CODES.EDIT_TRIGGER:
+        //修改触发任务
+        triggerSetting.edit(body.trigger);
         rpc(body.id);
         break;
       case ioSetting.ACTION_CODES.GET_ALL_IO:

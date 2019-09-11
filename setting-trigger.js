@@ -1,6 +1,6 @@
 var util = require('./util'),
   path = require('path');
-let ACTION_CODES = Object.freeze({ ADD_TRIGGER: 7001, REMOVE_TRIGGER: 7002, ENABLE_TRIGGER: 7003, DISABLE_TRIGGER: 7004, GET_ALL_TRIGGER: 7005 });
+let ACTION_CODES = Object.freeze({ ADD_TRIGGER: 7001, REMOVE_TRIGGER: 7002, ENABLE_TRIGGER: 7003, DISABLE_TRIGGER: 7004, GET_ALL_TRIGGER: 7005, EDIT_TRIGGER: 7009 });
 
 const PATH = path.join(__dirname, '../fish-config/trigger.json');
 var config = Object.assign({}, util.readFromJson(PATH));
@@ -88,4 +88,14 @@ function disable(id) {
 function getAll() {
   return config.trigger;
 }
-module.exports = { config, save, filterTriggerWithMonitor, ACTION_CODES, add, remove, enable, disable, getAll };
+
+/**
+ * 修改触发器
+ * @param {Object} trigger 
+ */
+function edit(trigger) {
+  remove(trigger.id);
+  add(trigger);
+}
+
+module.exports = { config, save, filterTriggerWithMonitor, ACTION_CODES, add, remove, enable, disable, getAll, edit };
