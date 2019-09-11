@@ -104,7 +104,7 @@ function rename(code, name) {
 function calibrationFeeder(code, weightPerSecond) {
   let item = config.io.find((el) => { return el.code === code && el.type === "feeder"; });
   if (item) {
-    item.weightPerSecond = weightPerSecond;
+    item.weight_per_second = weightPerSecond;
     save();
   } else {
     console.warn("IO已经不存在或类型不正确", code);

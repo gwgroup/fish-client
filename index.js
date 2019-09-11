@@ -153,7 +153,7 @@ client.on('message', function (topic, message) {
         break;
       case ioSetting.ACTION_CODES.CALIBRATION_FEEDER:
         //校准投喂量
-        ioSetting.calibrationFeeder(body.io.code, body.io.weightPerSecond);
+        ioSetting.calibrationFeeder(body.io.code, body.io.weight_per_second);
         rpc(body.id);
         break;
       default:
