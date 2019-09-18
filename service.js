@@ -52,7 +52,7 @@ status.__emit = function (key) {
 /**
  * 打开 
  * @param {String} code 
- * @param {int} duration 时长（秒）
+ * @param {int} duration 时长（毫秒）
  */
 function open(code, duration, cb) {
   let baseIoConfig = ioConfig.getIoConfig(code);
@@ -74,7 +74,7 @@ function open(code, duration, cb) {
     ioStatus.duration = duration;
     baseToDie[code] = setTimeout((code) => {
       close(code, () => { });
-    }, duration * 1000, baseIoConfig.code);
+    }, duration, baseIoConfig.code);
   }
   status.__emit(baseIoConfig.code, ioStatus);
   return cb();
@@ -168,8 +168,15 @@ function __triggerTask(monitor, val) {
         }
       } else if (element.operaction === "open") {
         if (!status[element.io_code].opened) {
-          open(element.io_code, element.duration, () => { });
-          console.log("触发任务", "启动成功", element.io_code, element.duration);
+          let duration = element.duration;
+          if (element.weight) {
+            let wps = ioConfig.getIoConfig(element.io_code).weight_per_second;
+            duration = Math.floor(element.weight / wps * 1000);
+          }
+          if (duration) {
+            open(element.io_code, duration, () => { });
+            console.log("触发任务", "启动成功", element.io_code, element.duration);
+          }
         }
       }
     }

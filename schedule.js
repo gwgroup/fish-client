@@ -1,6 +1,7 @@
 var schedule = require('node-schedule'),
   planSetting = require('./setting-plan'),
-  service = require('./service');
+  service = require('./service'),
+  ioSetting = require('./setting-io');
 /**
  * 添加任务到调度
  * @param {Object} task 
@@ -21,11 +22,18 @@ function __planHandler(fireTime) {
   let id = job.name,
     task = planSetting.findPlanWithID(id);
   if (task && task.enabled) {
-    service.open(task.io_code, task.duration, (err) => {
-      if (err) {
-        console.warn("任务启动失败，", err.message);
-      }
-    });
+    let duration = task.duration;
+    if (task.weight) {
+      let wps = ioSetting.getIoConfig(task.io_code).weight_per_second;
+      duration = Math.floor(task.weight / wps * 1000);
+    }
+    if (duration) {
+      service.open(task.io_code, duration, (err) => {
+        if (err) {
+          console.warn("任务启动失败，", err.message);
+        }
+      });
+    }
   } else {
     console.warn('已被禁止或移除的任务', id);
   }
