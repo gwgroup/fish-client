@@ -67,6 +67,11 @@ client.on('message', function (topic, message) {
           rpc(body.id, err);
         });
         break;
+      case TYPES.DEVICE_STATUS:
+        if (client.connected) {
+          client.publish(PUB_TOPIC, JSON.stringify({ type: TYPES.DEVICE_STATUS, status: service.status }));
+        }
+        break;
       case service.ACTION_CODES.EXEC:
         //执行cmd
         service.exec(body, (err, stdout, stderr) => {
