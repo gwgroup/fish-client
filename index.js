@@ -24,7 +24,8 @@ const
 console.log('获取到客户端标识', CLIENT_ID);
 let LWT_TOPIC = `device/lwt/${PRODUCT_ID}/${CLIENT_ID}`,
   SUB_TOPIC = `device/get/${PRODUCT_ID}/${CLIENT_ID}`,
-  PUB_TOPIC = `device/set/${PRODUCT_ID}/${CLIENT_ID}`;
+  PUB_TOPIC = `device/set/${PRODUCT_ID}/${CLIENT_ID}`,
+  PUBLIC_TOPIC = "device/get/fish/public";
 
 var client = mqtt.connect(MQTT_URL, {
   clientId: CLIENT_ID,
@@ -46,6 +47,7 @@ client.on('connect', function () {
   client.publish(LWT_TOPIC, JSON.stringify({ type: TYPES.ONLINE }), { qos: 2, retain: false });
   client.publish(PUB_TOPIC, JSON.stringify({ type: TYPES.DEVICE_STATUS, status: service.status }));
   client.subscribe(SUB_TOPIC, { qos: 0, retain: false });
+  client.subscribe(PUBLIC_TOPIC, { qos: 0, retain: false });
   service.reportIP(CLIENT_ID);
   //client.publish(PUB_TOPIC, 'Hello mqtt', { qos: 2, retain: false });
 });
