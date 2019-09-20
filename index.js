@@ -25,7 +25,7 @@ console.log('获取到客户端标识', CLIENT_ID);
 let LWT_TOPIC = `device/lwt/${PRODUCT_ID}/${CLIENT_ID}`,
   SUB_TOPIC = `device/get/${PRODUCT_ID}/${CLIENT_ID}`,
   PUB_TOPIC = `device/set/${PRODUCT_ID}/${CLIENT_ID}`,
-  PUBLIC_TOPIC = "device/get/fish/public";
+  PUBLIC_TOPIC = "device/public/fish";
 
 var client = mqtt.connect(MQTT_URL, {
   clientId: CLIENT_ID,
