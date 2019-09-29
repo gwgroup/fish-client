@@ -10,6 +10,7 @@ var request = require('request'),
   util = require('./util');
 
 let ACTION_CODES = Object.freeze({ EXEC: 3004, OPEN: 4001, CLOSE: 4002 });
+const ONLINE_LAMP_PIN = 37;
 
 //===================初始化IO====================
 //初始化RPIO
@@ -183,4 +184,16 @@ function __triggerTask(monitor, val) {
   });
 }
 
-module.exports = Object.assign(ev, { rpio, open, close, reportIP, exec, status, ACTION_CODES });
+/**
+ * 在线状态灯
+ * @param {Boolean} open 
+ */
+function onlineLamp(open) {
+  if (open) {
+    rpio.write(ONLINE_LAMP_PIN, rpio.HIGH);
+  } else {
+    rpio.close(ONLINE_LAMP_PIN);
+  }
+}
+
+module.exports = Object.assign(ev, { rpio, open, close, reportIP, exec, status, onlineLamp, ACTION_CODES });

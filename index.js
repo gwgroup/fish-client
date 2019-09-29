@@ -49,9 +49,15 @@ client.on('connect', function () {
   client.subscribe(SUB_TOPIC, { qos: 0, retain: false });
   client.subscribe(PUBLIC_TOPIC, { qos: 0, retain: false });
   service.reportIP(CLIENT_ID);
+  service.onlineLamp(true);
   //client.publish(PUB_TOPIC, 'Hello mqtt', { qos: 2, retain: false });
 });
-
+client.on('reconnect', function () {
+  service.onlineLamp(true);
+});
+client.on('offline', function () {
+  service.onlineLamp(false);
+});
 client.on('message', function (topic, message) {
   try {
     console.log(topic, message.toString('utf8'));
