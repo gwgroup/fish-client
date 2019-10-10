@@ -5,7 +5,7 @@ var service = require('./service');
 var planSetting = require('./setting-plan');
 var triggerSetting = require('./setting-trigger');
 var ioSetting = require('./setting-io');
-
+var cams = require('./cams');
 require('./schedule');
 //var util = require('./util');
 let CLIENT_ID = require('./setting-io').config.client_id;
@@ -178,6 +178,34 @@ client.on('message', function (topic, message) {
         //校准投喂量
         ioSetting.calibrationFeeder(body.io.code, body.io.weight_per_second);
         rpc(body.id);
+        break;
+      case cams.ACTION_CODES.SCAN:
+        //重新扫描摄像头
+        cams.scan((err, result) => {
+          rpc(body.id, err, result);
+        });
+        break;
+      case cams.ACTION_CODES.GET_CAMS_CONFIG:
+        //获取摄像头配置
+        rpc(body.id, undefined, cams.getCamsConfig());
+        break;
+      case cams.ACTION_CODES.START_PUSH:
+        //通知开始推流
+        cams.noticePushStream(body.cam_key, (err) => {
+          rpc(body.id, err);
+        });
+        break;
+      case cams.ACTION_CODES.STOP_PUSH:
+        //通知停止推流
+        cams.noticeStopStream(body.cam_key, (err) => {
+          rpc(body.id, err);
+        });
+        break;
+      case cams.ACTION_CODES.SWITCH_PROFILE:
+        //切换清晰度
+        cams.switchProfile(body.cam_key, body.profile_token, (err) => {
+          rpc(body.id, err);
+        });
         break;
       default:
         console.warn('未找到要处理的类型');

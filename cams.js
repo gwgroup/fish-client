@@ -47,6 +47,7 @@ function getCamsConfig() {
   return result;
 }
 let QUALITY_LABELS = ['流畅', '标清', '高清', '超清'];
+let ACTION_CODES = Object.freeze({ SCAN: 9001, GET_CAMS_CONFIG: 9002, START_PUSH: 9003, STOP_PUSH: 9004, SWITCH_PROFILE: 9005 });
 /**
  * 扫描摄像头列表
  * @param {Function} cb 
@@ -58,7 +59,7 @@ function scan(cb) {
     [
       (cb) => {
         //1执行摄像头发现
-        onvif.Discovery.probe({ timeout: 3000 }, cb);
+        onvif.Discovery.probe({ timeout: 5000 }, cb);
       },
       (cams, cb) => {
         //2构造对象并填充（包括局域网rtsp url,和远程rtsp_url）
@@ -104,7 +105,6 @@ function scan(cb) {
         //3.截取并上传预览图
         async.forEachOf(camsConfig.keys(), (key, index, cb) => {
           let item = camsConfig.get(key);
-          console.log(item, key);
           if (item.profiles.length === 0) {
             return cb();
           }
@@ -132,16 +132,20 @@ function scan(cb) {
  * 切换profile
  * @param {String} key 
  * @param {String} token 
+ * @param {Function} cb
  */
-function switchProfile(key, token) {
+function switchProfile(key, token, cb) {
   let cc = camsConfig.get(key);
   if (cc) {
     cc.profiles.forEach((item) => {
       item.selected = item.token === token;
     });
-    __changeProfile(key, cc, token);
+    __changeProfile(key, cc, (err) => {
+      cb(err);
+    });
+  } else {
+    cb(new Error("切换失败！"));
   }
-  return getCamsConfig();
 }
 
 /**
@@ -149,10 +153,12 @@ function switchProfile(key, token) {
  * @param {Object} cc 
  * @param {String} token 
  */
-function __changeProfile(key, cc, token) {
+function __changeProfile(key, cc, cb) {
   let temp_process = cc.push_process;
   cc.push_process = null;
-  noticePushStream(key, () => { });
+  noticePushStream(key, (err) => {
+    cb(err);
+  });
   if (temp_process) {
     temp_process.stop();
   }
@@ -175,7 +181,13 @@ function noticePushStream(key, cb) {
       cc.push_process = null;
     }
   });
-  return cb();
+  setTimeout(() => {
+    if (cc.push_process && !cc.push_process.sw.killd) {
+      return cb();
+    } else {
+      return cb(new Error('推流失败！'));
+    }
+  }, 3000);
 }
 
 /**
@@ -202,19 +214,29 @@ function noticeStopStream(key, cb) {
   cb();
 }
 
-module.exports = { getCamsConfig, switchProfile, noticePushStream, noticeStopStream, scan };
+module.exports = { getCamsConfig, switchProfile, noticePushStream, noticeStopStream, scan, ACTION_CODES };
 
 scan((err, result) => {
   console.log('开机扫描摄像头', err, JSON.stringify(result));
 });
 
-
 // setTimeout(() => {
 //   noticePushStream("192168247", (err) => {
-//     console.log(err);
+//     console.log("notice", err);
 //   });
-// }, 6000);
+// }, 15000);
 
+// setTimeout(() => {
+//   switchProfile("192168247", "profile_1", (err) => {
+//     console.log("switch", err);
+//   });
+// }, 60000);
+
+// setTimeout(() => {
+//   noticeStopStream("192168247", () => {
+//     console.log('stop');
+//   });
+// }, 120000);
 
 // setTimeout(() => {
 //   switchProfile("192168247", "profile_1");

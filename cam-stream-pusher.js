@@ -1,3 +1,10 @@
+/***
+ * 改进方案
+ * 进程开始后，请求服务器确认是否已经推流成功，如果成功触发推流已开始事件
+ * 
+ * 
+ * 
+ */
 let EventEmitter = require('events').EventEmitter;
 var cp = require('child_process');
 var Request = require('request');
@@ -16,24 +23,43 @@ class CamSteamPusher extends EventEmitter {
     this.sw.stderr.on('data', data => {
       this.emit('err', data);
     });
-    this.sw.on('close', () => {
+    this.sw.on('close', (code) => {
+      //console.log('sw close', code, this.__autoInterval);
       this.emit('close', this);
+      if (this.__autoInterval) {
+        clearInterval(this.__autoInterval);
+      }
+      //this.emit('begin', new Error('推流失败！'));
     });
     this.autoStop();
+    //this.checkIsStarted();
   }
   stop() {
     try {
-      if (!this.sw.killed && this.sw.stdin.writable) {
+
+      if (this.sw.stdin.writable) {
         this.sw.stdin.write(Buffer.from([0x71]).toString('ascii'));
+      }
+
+      if (!this.sw.killed) {
         this.sw.kill();
       }
-    } catch (ex) { }
+
+    } catch (ex) {
+      console.error(ex);
+    }
   }
+  /**
+   * 自动停止方法
+   * 每30秒检查一次是否有用户正在访问，如果没有停止推流
+   */
   autoStop() {
     var $me = this;
     $me.__autoInterval = setInterval(() => {
       if ($me.sw.killed) {
-        return $me.__autoInterval.unref();
+        clearInterval($me.__autoInterval);
+        $me.__autoInterval = null;
+        return;
       }
       Request.get(`https://fish.ypcxpt.com/api/util/ed_stream_can_be_release?q=${this.__remote_push_url}`, { json: true }, (err, response, body) => {
         if (err) {
@@ -42,8 +68,9 @@ class CamSteamPusher extends EventEmitter {
         if (body.code === 1000 && body.data) {
           console.log('no users，stop push stream！');
           //可以释放
+          clearInterval($me.__autoInterval);
+          $me.__autoInterval = null;
           $me.stop();
-          $me.__autoInterval.unref();
         }
       });
     }, 30000);
