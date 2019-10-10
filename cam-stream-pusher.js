@@ -66,7 +66,7 @@ class CamSteamPusher extends EventEmitter {
           return;
         }
         if (body.code === 1000 && body.data) {
-          console.log('no users，stop push stream！');
+          console.log('no users，stop push stream！', $me.__org_push_url, $me.__remote_push_url);
           //可以释放
           clearInterval($me.__autoInterval);
           $me.__autoInterval = null;

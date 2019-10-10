@@ -110,7 +110,7 @@ function scan(cb) {
           }
           let lastprofile = item.profiles[item.profiles.length - 1];
           CamPreviewImage.obtainImage({ rtsp: lastprofile.org_rtsp_url, client_id: CLIENT_ID, key: key }, (err, url) => {
-            console.log(err, url);
+            //console.log(err, url);
             if (err) {
               return cb(err);
             }
@@ -122,8 +122,12 @@ function scan(cb) {
         });
       }
     ], (err) => {
-      if (err) { return cb(err); }
-      cb(undefined, getCamsConfig());
+      let cerr = undefined;
+      if (err) {
+        console.error("扫描摄像头发生异常", err);
+        cerr = util.BusinessError.build(50010, '未找到摄像头配置')
+      }
+      cb(cerr, getCamsConfig());
     }
   );
 }
@@ -141,10 +145,10 @@ function switchProfile(key, token, cb) {
       item.selected = item.token === token;
     });
     __changeProfile(key, cc, (err) => {
-      cb(err);
+      cb(err, getCamsConfig());
     });
   } else {
-    cb(new Error("切换失败！"));
+    cb(util.BusinessError.build(50011, '未找到摄像头配置'), getCamsConfig());
   }
 }
 
@@ -185,7 +189,7 @@ function noticePushStream(key, cb) {
     if (cc.push_process && !cc.push_process.sw.killd) {
       return cb();
     } else {
-      return cb(new Error('推流失败！'));
+      return cb(util.BusinessError.build(50012, '设备推流失败！'));
     }
   }, 3000);
 }

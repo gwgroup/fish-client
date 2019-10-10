@@ -203,8 +203,8 @@ client.on('message', function (topic, message) {
         break;
       case cams.ACTION_CODES.SWITCH_PROFILE:
         //切换清晰度
-        cams.switchProfile(body.cam_key, body.profile_token, (err) => {
-          rpc(body.id, err);
+        cams.switchProfile(body.cam_key, body.profile_token, (err, result) => {
+          rpc(body.id, err, result);
         });
         break;
       default:
