@@ -63,7 +63,7 @@ function scan(cb) {
       },
       (cams, cb) => {
         //2构造对象并填充（包括局域网rtsp url,和远程rtsp_url）
-        cams.forEach((item) => {
+        async.forEachOf(cams, (item, k, cb) => {
           let key = item.hostname.replace(/\./g, '');
           let config = {
             profiles: [],
@@ -94,12 +94,15 @@ function scan(cb) {
               cb();
             });
           }, (err) => {
-            if (err) {
-              return cb(err);
+            if (!err) {
+              camsConfig.set(key, config);
+            } else {
+              console.error('scan build profile', err);
             }
-            camsConfig.set(key, config);
             cb();
           });
+        }, (err) => {
+          cb();
         });
       }, (cb) => {
         //3.截取并上传预览图
