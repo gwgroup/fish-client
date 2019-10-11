@@ -47,7 +47,7 @@ function getCamsConfig() {
   return result;
 }
 let QUALITY_LABELS = ['流畅', '标清', '高清', '超清'];
-let ACTION_CODES = Object.freeze({ SCAN: 9001, GET_CAMS_CONFIG: 9002, START_PUSH: 9003, STOP_PUSH: 9004, SWITCH_PROFILE: 9005 });
+let ACTION_CODES = Object.freeze({ SCAN: 9001, GET_CAMS_CONFIG: 9002, START_PUSH: 9003, STOP_PUSH: 9004, SWITCH_PROFILE: 9005, MOVE: 9006 });
 /**
  * 扫描摄像头列表
  * @param {Function} cb 
@@ -217,8 +217,23 @@ function noticeStopStream(key, cb) {
   }
   cb();
 }
-
-module.exports = { getCamsConfig, switchProfile, noticePushStream, noticeStopStream, scan, ACTION_CODES };
+/**
+ * 移动
+ * @param {String} key 
+ * @param {Object} pan
+ */
+function move(key, pan) {
+  let { x, y } = pan;
+  let cc = camsConfig.get(key);
+  if (cc) {
+    try {
+      cc.ref.relativeMove({ x: x ? x : 0, y: y ? y : 0 });
+    } catch (ex) {
+      console.error(ex);
+    }
+  }
+}
+module.exports = { getCamsConfig, switchProfile, noticePushStream, noticeStopStream, scan, move, ACTION_CODES };
 
 scan((err, result) => {
   console.log('开机扫描摄像头', err, JSON.stringify(result));

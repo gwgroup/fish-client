@@ -207,6 +207,10 @@ client.on('message', function (topic, message) {
           rpc(body.id, err, result);
         });
         break;
+      case cams.ACTION_CODES.MOVE:
+        cams.move(body.cam_key, body.pan);
+        rpc(body.id, undefined);
+        break;
       default:
         console.warn('未找到要处理的类型');
         break;
