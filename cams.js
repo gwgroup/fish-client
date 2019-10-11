@@ -64,6 +64,10 @@ function scan(cb) {
       (cams, cb) => {
         //2构造对象并填充（包括局域网rtsp url,和远程rtsp_url）
         async.forEachOf(cams, (item, k, cb) => {
+          if (!item.profiles) {
+            //如果有密码跳过此摄像头
+            return cb();
+          }
           let key = item.hostname.replace(/\./g, '');
           let config = {
             profiles: [],
