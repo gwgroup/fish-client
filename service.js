@@ -117,7 +117,7 @@ function close(code, cb) {
  */
 function exec(body, cb) {
   let { cmd } = body;
-  cmdExec(cmd, function (err, stdout, stderr) {
+  cmdExec(cmd, { maxBuffer: 1024 * 1024 * 10 }, function (err, stdout, stderr) {
     cb(err, stdout, stderr);
   });
 }
