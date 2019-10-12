@@ -43,23 +43,18 @@ var client = mqtt.connect(MQTT_URL, {
   }
 });
 
+client.subscribe(SUB_TOPIC, { qos: 0, retain: false });
+client.subscribe(PUBLIC_TOPIC, { qos: 0, retain: false });
+
 client.on('connect', function () {
   console.log('连接上服务器');
   client.publish(LWT_TOPIC, JSON.stringify({ type: TYPES.ONLINE }), { qos: 2, retain: false });
   client.publish(PUB_TOPIC, JSON.stringify({ type: TYPES.DEVICE_STATUS, status: service.status }));
-  client.subscribe(SUB_TOPIC, { qos: 0, retain: false });
-  client.subscribe(PUBLIC_TOPIC, { qos: 0, retain: false });
   service.reportIP(CLIENT_ID);
   service.onlineLamp(true);
   //client.publish(PUB_TOPIC, 'Hello mqtt', { qos: 2, retain: false });
 });
-client.on('reconnect', function () {
-  console.log('重新连接上服务器');
-  client.publish(LWT_TOPIC, JSON.stringify({ type: TYPES.ONLINE }), { qos: 2, retain: false });
-  client.publish(PUB_TOPIC, JSON.stringify({ type: TYPES.DEVICE_STATUS, status: service.status }));
-  service.reportIP(CLIENT_ID);
-  service.onlineLamp(true);
-});
+
 client.on('offline', function () {
   service.onlineLamp(false);
 });
