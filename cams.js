@@ -282,6 +282,7 @@ function move(key, pan) {
  * @param {Function} cb 
  */
 function auth(key, password, cb) {
+  console.log('auth start', key, password);
   //1.尝试获取摄像头对象
   //2.尝试连接
   //3.获取profiles
