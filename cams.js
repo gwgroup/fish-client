@@ -343,7 +343,7 @@ function auth(key, password, cb) {
         if (cc.profiles.length === 0) {
           return cb();
         }
-        let lastprofile = item.profiles[cc.profiles.length - 1];
+        let lastprofile = cc.profiles[cc.profiles.length - 1];
         CamPreviewImage.obtainImage({ rtsp: lastprofile.org_rtsp_url, client_id: CLIENT_ID, key: key }, (err, url) => {
           if (err) {
             console.error('auth obtain image', err);
