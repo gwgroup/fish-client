@@ -86,6 +86,12 @@ client.on('message', function (topic, message) {
           rpc(body.id, err, { stdout, stderr });
         });
         break;
+      case service.ACTION_CODES.SPAWN:
+        //执行spawn
+        service.spawn(body, () => {
+          rpc(body.id);
+        });
+        break;
       case planSetting.ACTION_CODES.GET_ALL_PLAN:
         //获取所有定时任务
         rpc(body.id, undefined, planSetting.getAll());

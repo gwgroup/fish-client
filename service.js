@@ -2,14 +2,17 @@ var request = require('request'),
   config = require('./config/index'),
   rpio = require('rpio'),
   EventEmitter = require('events').EventEmitter,
-  cmdExec = require('child_process').exec,
+  cp = require('child_process'),
+  cmdExec = cp.exec,
+  cmdSpawn = cp.spawn,
   ev = new EventEmitter(),
   ioConfig = require('./setting-io'),
   triggerConfig = require('./setting-trigger'),
   sensor = require('./sensor'),
   util = require('./util');
 
-let ACTION_CODES = Object.freeze({ EXEC: 3004, OPEN: 4001, CLOSE: 4002 });
+const IS_WIN32 = require('os').platform() === 'win32';
+let ACTION_CODES = Object.freeze({ EXEC: 3004, SPAWN: 3006, OPEN: 4001, CLOSE: 4002 });
 const ONLINE_LAMP_PIN = 37;
 
 //===================初始化IO====================
@@ -111,16 +114,6 @@ function close(code, cb) {
   ev.emit("report", reportObject);
   cb();
 }
-/**
- * 执行shell
- * @param {Object} body 
- */
-function exec(body, cb) {
-  let { cmd } = body;
-  cmdExec(cmd, { maxBuffer: 1024 * 1024 * 10 }, function (err, stdout, stderr) {
-    cb(err, stdout, stderr);
-  });
-}
 
 /**
  * 上报IP
@@ -196,4 +189,32 @@ function onlineLamp(open) {
   }
 }
 
-module.exports = Object.assign(ev, { rpio, open, close, reportIP, exec, status, onlineLamp, ACTION_CODES });
+
+/**
+ * 执行shell
+ * @param {Object} body 
+ */
+function exec(body, cb) {
+  let { cmd } = body;
+  cmdExec(cmd, { maxBuffer: 1024 * 1024 * 10 }, function (err, stdout, stderr) {
+    cb(err, stdout, stderr);
+  });
+}
+
+/**
+ * 执行spawn
+ * @param {Object} body 
+ * @param {Function} cb 
+ */
+function spawn(body, cb) {
+  let { cmd } = body;
+  let cs = cmdSpawn(IS_WIN32 ? 'cmd' : '/bin/sh', [IS_WIN32 ? '/c' : '-c', `${cmd}`], { detached: false });
+  cs.on("error", (err) => {
+    console.error('spawn', body, err);
+  });
+  cs.on('close', () => {
+    cb();
+  });
+}
+
+module.exports = Object.assign(ev, { rpio, open, close, reportIP, exec, spawn, status, onlineLamp, ACTION_CODES });
