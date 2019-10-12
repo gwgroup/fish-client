@@ -290,7 +290,7 @@ function auth(key, password, cb) {
   //5.把对象添加到可用列表
   //6.返回完整配置列表
   let cc = unlistedCamsConfig.get(key);
-  if (!cam) { return cb(util.BusinessError.build(50011, '未找到摄像头配置')); }
+  if (!cc) { return cb(util.BusinessError.build(50011, '未找到摄像头配置')); }
   let cam = cc.ref;
   async.waterfall(
     [
