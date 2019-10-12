@@ -84,9 +84,9 @@ function scan(cb) {
           let config = {
             profiles: [],
             ref: cam,
-            hostname,
+            hostname: cam.hostname,
             push_process: null,
-            preview_image
+            preview_image: null
           };
           if (!cam.profiles) {
             //如果有密码跳过此摄像头,并加入到未授权的摄像头列表
