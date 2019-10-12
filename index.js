@@ -214,8 +214,15 @@ client.on('message', function (topic, message) {
         });
         break;
       case cams.ACTION_CODES.MOVE:
+        //移动摄像头
         cams.move(body.cam_key, body.pan);
         rpc(body.id, undefined);
+        break;
+      case cams.ACTION_CODES.AUTH:
+        //尝试登录摄像头
+        cams.auth(body.cam_key, body.password, (err, result) => {
+          rpc(body.id, err, result);
+        });
         break;
       default:
         console.warn('未找到要处理的类型');

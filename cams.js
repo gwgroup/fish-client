@@ -1,9 +1,12 @@
 var onvif = require('onvif');
 var util = require('./util');
+const url = require('url');
 var CamStreamPusher = require('./cam-stream-pusher');
 var CamPreviewImage = require('./cam-preview-image');
 let CLIENT_ID = require('./setting-io').config.client_id;
 var async = require('async');
+let QUALITY_LABELS = ['流畅', '标清', '高清', '超清'];
+let ACTION_CODES = Object.freeze({ SCAN: 9001, GET_CAMS_CONFIG: 9002, START_PUSH: 9003, STOP_PUSH: 9004, SWITCH_PROFILE: 9005, MOVE: 9006, AUTH: 9007 });
 /**
  * 数据结构
  * {
@@ -35,19 +38,31 @@ var async = require('async');
  * }
  */
 let camsConfig = new Map();
+/**
+ * 未加入可操作名单啊摄像头配置，格式和camsconfig一致
+ */
+let unlistedCamsConfig = new Map();
+
+/**
+ * 获取配置
+ * @returns {Object}
+ */
 function getCamsConfig() {
-  let result = [];
-  camsConfig.forEach(({ profiles, preview_image }, key) => {
+  let usable_cams = [],
+    not_available_cams = [];
+  camsConfig.forEach(({ profiles, preview_image, hostname }, key) => {
     let pfs = [];
     profiles.forEach(({ token, width, height, label, rtsp_url, selected }) => {
       pfs.push({ token, width, height, label, rtsp_url, selected });
     });
-    result.push({ key, profiles: pfs, preview_image });
+    usable_cams.push({ key, hostname, profiles: pfs, preview_image });
   });
-  return result;
+  unlistedCamsConfig.forEach(({ hostname }, key) => {
+    not_available_cams.push({ key, hostname });
+  });
+  return { usable_cams, not_available_cams };
 }
-let QUALITY_LABELS = ['流畅', '标清', '高清', '超清'];
-let ACTION_CODES = Object.freeze({ SCAN: 9001, GET_CAMS_CONFIG: 9002, START_PUSH: 9003, STOP_PUSH: 9004, SWITCH_PROFILE: 9005, MOVE: 9006 });
+
 /**
  * 扫描摄像头列表
  * @param {Function} cb 
@@ -55,6 +70,7 @@ let ACTION_CODES = Object.freeze({ SCAN: 9001, GET_CAMS_CONFIG: 9002, START_PUSH
 function scan(cb) {
   //1.清除原先的配置
   camsConfig.clear();
+  unlistedCamsConfig.clear();
   async.waterfall(
     [
       (cb) => {
@@ -63,23 +79,26 @@ function scan(cb) {
       },
       (cams, cb) => {
         //2构造对象并填充（包括局域网rtsp url,和远程rtsp_url）
-        async.forEachOf(cams, (item, k, cb) => {
-          if (!item.profiles) {
-            //如果有密码跳过此摄像头
-            return cb();
-          }
-          let key = item.hostname.replace(/\./g, '');
+        async.forEachOf(cams, (cam, k, cb) => {
+          let key = cam.hostname.replace(/\./g, '');
           let config = {
             profiles: [],
-            ref: item,
-            push_process: null
+            ref: cam,
+            hostname,
+            push_process: null,
+            preview_image
           };
+          if (!cam.profiles) {
+            //如果有密码跳过此摄像头,并加入到未授权的摄像头列表
+            unlistedCamsConfig.set(key, config);
+            return cb();
+          }
           //2.1根据清晰度排序，清晰度最低的token排最前
-          item.profiles.sort((a, b) => {
+          cam.profiles.sort((a, b) => {
             return a.videoEncoderConfiguration.resolution.height > b.videoEncoderConfiguration.resolution.height;
           });
           //2.2循环构造profile
-          async.forEachOf(item.profiles, (el, index, cb) => {
+          async.forEachOf(cam.profiles, (el, index, cb) => {
             if (index > 2) { return; }
             let token = el["$"].token,
               bounds = el.videoEncoderConfiguration.resolution,
@@ -89,11 +108,12 @@ function scan(cb) {
               //远程rtsp——url
               rtsp_url = `rtsp://ed.ypcxpt.com/${CLIENT_ID}/${key}/${token}`;
             //2.2.1获取原始流地址
-            item.getStreamUri({ protocol: 'RTSP', profileToken: token }, function (err, stream) {
+            cam.getStreamUri({ protocol: 'RTSP', profileToken: token }, function (err, stream) {
               if (err) {
                 return cb(err);
               }
-              let org_rtsp_url = stream.uri;
+              //重新生成rtsp url（接口获取有可能会确实auth参数）
+              let org_rtsp_url = __buildFullRtspUrl(stream.uri, cam.username, cam.password);
               config.profiles.push({ token, width, height, label, org_rtsp_url, rtsp_url, selected: index === 0 ? true : false });
               cb();
             });
@@ -137,6 +157,22 @@ function scan(cb) {
       cb(cerr, getCamsConfig());
     }
   );
+}
+
+/**
+ * 生成完整的rtsp url（带用户/口令）
+ * @param {String} baseUrl 
+ * @param {String} username 
+ * @param {String} password 
+ */
+function __buildFullRtspUrl(baseUrl, username, password) {
+  if (password) {
+    var turl = url.parse(baseUrl);
+    turl.auth = `${username ? username : "admin"}:${password}`;
+    return url.format(turl);
+  } else {
+    return baseUrl;
+  }
 }
 
 /**
@@ -240,7 +276,97 @@ function move(key, pan) {
     }
   }
 }
-module.exports = { getCamsConfig, switchProfile, noticePushStream, noticeStopStream, scan, move, ACTION_CODES };
+
+/**
+ * 验证摄像头用户
+ * @param {String} key 
+ * @param {String} password
+ * @param {Function} cb 
+ */
+function auth(key, password, cb) {
+  //1.尝试获取摄像头对象
+  //2.尝试连接
+  //3.获取profiles
+  //4.获取预览图
+  //5.把对象添加到可用列表
+  //6.返回完整配置列表
+  let cc = unlistedCamsConfig.get(key);
+  if (!cam) { return cb(util.BusinessError.build(50011, '未找到摄像头配置')); }
+  let cam = cc.ref;
+  async.waterfall(
+    [
+      (cb) => {
+        //验证登录
+        cam.username = 'admin';
+        cam.password = password;
+        cam.connect((err) => {
+          if (err) {
+            return cb(util.BusinessError.build(50031, '口令有误'));
+          }
+          cb();
+        });
+      }, (cb) => {
+        //获取rtsp url
+        //2.1根据清晰度排序，清晰度最低的token排最前
+        cam.profiles.sort((a, b) => {
+          return a.videoEncoderConfiguration.resolution.height > b.videoEncoderConfiguration.resolution.height;
+        });
+        //2.2循环构造profile
+        async.forEachOf(cam.profiles, (el, index, cb) => {
+          if (index > 2) { return; }
+          let token = el["$"].token,
+            bounds = el.videoEncoderConfiguration.resolution,
+            width = bounds.width,
+            height = bounds.height,
+            label = QUALITY_LABELS[index],
+            //远程rtsp——url
+            rtsp_url = `rtsp://ed.ypcxpt.com/${CLIENT_ID}/${key}/${token}`;
+          //2.2.1获取原始流地址
+          cam.getStreamUri({ protocol: 'RTSP', profileToken: token }, function (err, stream) {
+            if (err) {
+              return cb(err);
+            }
+            //重新生成rtsp url（接口获取有可能会确实auth参数）
+            let org_rtsp_url = __buildFullRtspUrl(stream.uri, cam.username, cam.password);
+            cc.profiles.push({ token, width, height, label, org_rtsp_url, rtsp_url, selected: index === 0 ? true : false });
+            cb();
+          });
+        }, (err) => {
+          if (err) {
+            console.error('auth get stream uri', err);
+            cc.profiles.clear();
+            return cb(util.BusinessError.build(50032, '与摄像头通讯异常，请稍后重试'));
+          }
+          cb();
+        });
+      }, (cb) => {
+        //获取预览图
+        if (cc.profiles.length === 0) {
+          return cb();
+        }
+        let lastprofile = item.profiles[cc.profiles.length - 1];
+        CamPreviewImage.obtainImage({ rtsp: lastprofile.org_rtsp_url, client_id: CLIENT_ID, key: key }, (err, url) => {
+          if (err) {
+            console.error('auth obtain image', err);
+          }
+          cc.preview_image = url;
+          cb();
+        });
+      }, (cb) => {
+        //添加到可用配置
+        camsConfig.set(key, cc);
+        unlistedCamsConfig.delete(key);
+        cb();
+      }
+    ], (err) => {
+      if (err) {
+        return cb(err);
+      }
+      cb(undefined, getCamsConfig());
+    }
+  );
+}
+module.exports = { getCamsConfig, switchProfile, noticePushStream, noticeStopStream, scan, move, auth, ACTION_CODES };
 
 scan((err, result) => {
   console.log('开机扫描摄像头', err, JSON.stringify(result));
