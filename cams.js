@@ -149,12 +149,10 @@ function scan(cb) {
         });
       }
     ], (err) => {
-      let cerr = undefined;
       if (err) {
         console.error("扫描摄像头发生异常", err);
-        cerr = util.BusinessError.build(50010, '未找到摄像头配置')
       }
-      cb(cerr, getCamsConfig());
+      cb(undefined, getCamsConfig());
     }
   );
 }
