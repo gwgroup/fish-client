@@ -183,7 +183,7 @@ function __triggerTask(monitor, val) {
  */
 function onlineLamp(open) {
   if (open) {
-    rpio.write(ONLINE_LAMP_PIN, rpio.HIGH);
+    rpio.open(ONLINE_LAMP_PIN, rpio.OUTPUT, rpio.HIGH);
   } else {
     rpio.close(ONLINE_LAMP_PIN);
   }

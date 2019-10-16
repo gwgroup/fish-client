@@ -1,4 +1,4 @@
-const url = require('url');
+const url = process.mainModule.require('url');
 /**
  * 生成完整的rtsp url（带用户/口令）
  * @param {*} baseUrl 
