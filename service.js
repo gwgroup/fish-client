@@ -102,7 +102,7 @@ function close(code, cb) {
   }
 
   let reportObject = { start_time: ioStatus.start_time, end_time: Date.now(), plan_duration: ioStatus.duration, io_code: code, io_name: baseIoConfig.name, io_type: baseIoConfig.type, weight_per_second: baseIoConfig.weight_per_second };
-  rpio.open(baseIoConfig.pin, rpio.OUTPUT, rpio.LOW);
+  rpio.close(baseIoConfig.pin);
   ioStatus.opened = 0;
   ioStatus.start_time = null;
   ioStatus.duration = null;
