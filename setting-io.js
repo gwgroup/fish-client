@@ -3,7 +3,7 @@ var util = require('./util'),
 
 const PATH = path.join(__dirname, '../fish-config/io.json');
 var config = Object.assign({}, util.readFromJson(PATH));
-let ACTION_CODES = Object.freeze({ ADD_IO: 8001, REMOVE_IO: 8002, ENABLE_IO: 8003, DISABLE_IO: 8004, GET_ALL_IO: 8005, RENAME_IO: 8006, CALIBRATION_FEEDER: 8007 });
+let ACTION_CODES = Object.freeze({ ADD_IO: 8001, REMOVE_IO: 8002, ENABLE_IO: 8003, DISABLE_IO: 8004, GET_ALL_IO: 8005, RENAME_IO: 8006, CALIBRATION_FEEDER: 8007, POWER: 8008 });
 
 let EventEmitter = require('events').EventEmitter,
   ev = new EventEmitter();
@@ -24,7 +24,6 @@ function save() {
 function getIoConfig(code) {
   return config.io.find((el) => { return el.code === code; });
 }
-
 
 /**
  * 添加IO
@@ -51,6 +50,7 @@ function remove(code) {
   save();
   ev.emit("remove_io", code);
 }
+
 /**
  * 启用IO
  * @param {String} code 
@@ -80,6 +80,7 @@ function disable(code) {
     console.warn("IO已经不存在，不能禁用", code);
   }
 }
+
 /**
  * 重命名
  * @param {String} code 
@@ -112,10 +113,25 @@ function calibrationFeeder(code, weightPerSecond) {
 }
 
 /**
+ * 功耗设置
+ * @param {String} code 
+ * @param {Number} power_kw 
+ */
+function power(code, power_kw) {
+  let item = config.io.find((el) => { return el.code === code; });
+  if (item) {
+    item.power_kw = power_kw;
+    save();
+  } else {
+    console.warn("IO已经不存在或类型不正确", code);
+  }
+}
+
+/**
  * 获取所有IO
  */
 function getAll() {
   return config.io;
 }
 
-module.exports = Object.assign(ev, { config, save, getIoConfig, add, remove, enable, disable, rename, calibrationFeeder, getAll, ACTION_CODES });
+module.exports = Object.assign(ev, { config, save, getIoConfig, add, remove, enable, disable, rename, calibrationFeeder, power, getAll, ACTION_CODES });

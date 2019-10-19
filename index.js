@@ -185,6 +185,11 @@ client.on('message', function (topic, message) {
         ioSetting.calibrationFeeder(body.io.code, body.io.weight_per_second);
         rpc(body.id);
         break;
+      case ioSetting.ACTION_CODES.POWER:
+        //设置功耗
+        ioSetting.power(body.io.code, body.io.power_kw);
+        rpc(body.id);
+        break;
       case cams.ACTION_CODES.SCAN:
         //重新扫描摄像头
         cams.scan((err, result) => {
