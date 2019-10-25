@@ -187,7 +187,7 @@ client.on('message', function (topic, message) {
         break;
       case ioSetting.ACTION_CODES.POWER:
         //设置功耗
-        ioSetting.power(body.io.code, body.io.power_kw);
+        ioSetting.power(body.io.code, body.io.power_w);
         rpc(body.id);
         break;
       case cams.ACTION_CODES.SCAN:

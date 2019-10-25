@@ -115,12 +115,12 @@ function calibrationFeeder(code, weightPerSecond) {
 /**
  * 功耗设置
  * @param {String} code 
- * @param {Number} power_kw 
+ * @param {Number} power_w 
  */
-function power(code, power_kw) {
+function power(code, power_w) {
   let item = config.io.find((el) => { return el.code === code; });
   if (item) {
-    item.power_kw = power_kw;
+    item.power_w = power_w;
     save();
   } else {
     console.warn("IO已经不存在或类型不正确", code);

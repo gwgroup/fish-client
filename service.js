@@ -101,7 +101,7 @@ function close(code, cb) {
     return cb(util.BusinessError.build(40023, '不需要重复关闭设备'));
   }
 
-  let reportObject = { start_time: ioStatus.start_time, end_time: Date.now(), plan_duration: ioStatus.duration, io_code: code, io_name: baseIoConfig.name, io_type: baseIoConfig.type, weight_per_second: baseIoConfig.weight_per_second, power_kw: baseIoConfig.power_kw };
+  let reportObject = { start_time: ioStatus.start_time, end_time: Date.now(), plan_duration: ioStatus.duration, io_code: code, io_name: baseIoConfig.name, io_type: baseIoConfig.type, weight_per_second: baseIoConfig.weight_per_second, power_w: baseIoConfig.power_w };
   rpio.close(baseIoConfig.pin);
   ioStatus.opened = 0;
   ioStatus.start_time = null;
