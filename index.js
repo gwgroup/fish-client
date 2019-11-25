@@ -94,7 +94,7 @@ client.on('message', function (topic, message) {
         break;
       case planSetting.ACTION_CODES.GET_ALL_PLAN:
         //获取所有定时任务
-        rpc(body.id, undefined, planSetting.getAll());
+        rpc(body.id, undefined, getAllPlanWithMate());
         break;
       case planSetting.ACTION_CODES.ADD_PLAN:
         //添加定时任务
@@ -123,8 +123,7 @@ client.on('message', function (topic, message) {
         break;
       case triggerSetting.ACTION_CODES.GET_ALL_TRIGGER:
         //获取所有触发任务
-        let data = triggerSetting.getAll();
-        rpc(body.id, undefined, data);
+        rpc(body.id, undefined, getAllTriggerWithMate());
         break;
       case triggerSetting.ACTION_CODES.ADD_TRIGGER:
         //添加触发任务
@@ -274,3 +273,31 @@ function rpc(id, err, data) {
   }
 }
 
+/**
+ * 获取带有详细信息的所有任务
+ */
+function getAllPlanWithMate() {
+  let result = [];
+  planSetting.getAll().forEach(element => {
+    let io_code = element.io_code,
+      ioConfig = ioSetting.getIoConfig(io_code);
+    if (ioConfig) {
+      result.push(Object.assign({ io_name: ioConfig.name, io_type: ioConfig.type, io_enabled: ioConfig.enabled }, element));
+    }
+  });
+  return result;
+}
+/**
+ * 获取带有详细信息的所有触发器
+ */
+function getAllTriggerWithMate() {
+  let result = [];
+  triggerSetting.getAll().forEach(element => {
+    let io_code = element.io_code,
+      ioConfig = ioSetting.getIoConfig(io_code);
+    if (ioConfig) {
+      result.push(Object.assign({ io_name: ioConfig.name, io_type: ioConfig.type, io_enabled: ioConfig.enabled }, element));
+    }
+  });
+  return result;
+}
