@@ -76,8 +76,10 @@ client.on('message', function (topic, message) {
         });
         break;
       case TYPES.DEVICE_STATUS:
+        //上报设备状态
         if (client.connected) {
           client.publish(PUB_TOPIC, JSON.stringify({ type: TYPES.DEVICE_STATUS, status: service.status }));
+          service.reportIP(CLIENT_ID);
         }
         break;
       case service.ACTION_CODES.EXEC:

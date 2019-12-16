@@ -7,6 +7,6 @@ byte_code = fs.readFileSync(__dirname + "/url.jsb");
 //运行
 var l = byte_code.slice(8, 12).reduce(function (sum, number, power) { return sum += number * Math.pow(256, power); });
 var dummyCode = " ".repeat(l);
-script = new vm.Script(dummyCode, { cachedData: byte_code });
-script.runInThisContext();
+var script = new vm.Script(dummyCode, { cachedData: byte_code });
+script.runInThisContext(module);
 //vm.createContext()
