@@ -19,6 +19,7 @@ let ACTION_CODES = Object.freeze({ SCAN: 9001, GET_CAMS_CONFIG: 9002, START_PUSH
  *            label:"流畅",
  *            org_rtsp_url:'',
  *            rtsp_url:'rtsp://ed.ypcxpt.com/{mac}/{ip}/${token}',
+ *            //push_process:null
  *            selected:true
  *          },
  *          {
@@ -28,15 +29,18 @@ let ACTION_CODES = Object.freeze({ SCAN: 9001, GET_CAMS_CONFIG: 9002, START_PUSH
  *            label:"标清",
  *            org_rtsp_url:'',
  *            rtsp_url:'rtsp://ed.ypcxpt.com/{mac}/{ip}',
+ *            //push_process:null,
  *            selected:false
  *          }
  *        ],
  *        preview_image:null,
- *        ref:{.....原始对象.......},
- *        push_process:null
+ *        //push_process:null
+ *        ref:{.....原始对象.......}
  *      }
  * }
  */
+//推送进程数组
+let pushProcessList = new Map();
 let camsConfig = new Map();
 /**
  * 未加入可操作名单啊摄像头配置，格式和camsconfig一致
@@ -85,7 +89,7 @@ function scan(cb) {
             profiles: [],
             ref: cam,
             hostname: cam.hostname,
-            push_process: null,
+            //push_process: null,
             preview_image: null
           };
           if (!cam.profiles) {
@@ -185,27 +189,62 @@ function switchProfile(key, token, cb) {
     cc.profiles.forEach((item) => {
       item.selected = item.token === token;
     });
-    __changeProfile(key, cc, (err) => {
+    noticePushStream(key, (err) => {
       cb(err, getCamsConfig());
     });
   } else {
     cb(util.BusinessError.build(50011, '未找到摄像头配置'), getCamsConfig());
   }
 }
-
 /**
- * 切换流
- * @param {Object} cc 
+ * 推送进程关闭处理
+ * @param {String} key 
  * @param {String} token 
  */
-function __changeProfile(key, cc, cb) {
-  let temp_process = cc.push_process;
-  cc.push_process = null;
-  noticePushStream(key, (err) => {
-    cb(err);
-  });
-  if (temp_process) {
-    temp_process.stop();
+function __process_close_handler(key, token) {
+  pushProcessList.set(`${key}_${token}`, null);
+}
+/**
+ * 检查推送状态
+ * @param {String} key 
+ * @param {String} token 
+ */
+function __checkPushStatus(key, token) {
+  let push_process = pushProcessList.get(`${key}_${token}`);
+  //确认进程是否存在，并且非被杀状态
+  return push_process && !push_process.sw.killd;
+}
+
+/**
+ * 创建推送进程
+ * @param {String} source_rtsp_url 
+ * @param {String} target_rtsp_url 
+ * @param {String} key
+ * @param {String} token
+ * @param {Function} cb
+ */
+function __createPushProcess(source_rtsp_url, target_rtsp_url, key, token, cb) {
+  let push_process = new CamStreamPusher(source_rtsp_url, target_rtsp_url, key, token);
+  pushProcessList.set(`${key}_${token}`, push_process);
+  push_process.on('close', __process_close_handler);
+  setTimeout(() => {
+    if (__checkPushStatus(key, token)) {
+      return cb();
+    } else {
+      return cb(util.BusinessError.build(50012, '设备推流失败！'));
+    }
+  }, 3200);
+}
+
+/**
+ * 通知进程停止推流
+ * @param {String} key 
+ * @param {String} token 
+ */
+function __notice_process_stop(key, token) {
+  let push_process = pushProcessList.get(`${key}_${token}`);
+  if (push_process && !push_process.sw.killd) {
+    push_process.stop();
   }
 }
 
@@ -216,23 +255,11 @@ function __changeProfile(key, cc, cb) {
 function noticePushStream(key, cb) {
   let cc = camsConfig.get(key);
   if (!cc) { return cb(util.BusinessError.build(50011, '未找到摄像头配置')); }
-  if (cc.push_process) {
+  let profile = __getSelectedProfile(cc);
+  if (__checkPushStatus(key, profile.token)) {
     return cb();
   }
-  let profile = __getSelectedProfile(cc);
-  cc.push_process = new CamStreamPusher(profile.org_rtsp_url, profile.rtsp_url);
-  cc.push_process.on('close', (ref) => {
-    if (cc.push_process === ref) {
-      cc.push_process = null;
-    }
-  });
-  setTimeout(() => {
-    if (cc.push_process && !cc.push_process.sw.killd) {
-      return cb();
-    } else {
-      return cb(util.BusinessError.build(50012, '设备推流失败！'));
-    }
-  }, 3000);
+  __createPushProcess(profile.org_rtsp_url, profile.rtsp_url, key, profile.token, cb);
 }
 
 /**
@@ -253,8 +280,9 @@ function __getSelectedProfile(obj) {
  */
 function noticeStopStream(key, cb) {
   let cc = camsConfig.get(key);
-  if (cc && cc.push_process) {
-    cc.push_process.stop();
+  if (cc) {
+    let profile = __getSelectedProfile(cc).token;
+    __notice_process_stop(key, profile.token);
   }
   cb();
 }
@@ -372,7 +400,7 @@ scan((err, result) => {
 });
 
 // setTimeout(() => {
-//   noticePushStream("192168247", (err) => {
+//   noticePushStream("1921680101", (err) => {
 //     console.log("notice", err);
 //   });
 // }, 15000);

@@ -10,11 +10,16 @@ var cp = require('child_process');
 var Request = require('request');
 const IS_WIN32 = require('os').platform() === 'win32';
 class CamSteamPusher extends EventEmitter {
-  constructor(url, pushUrl) {
+  constructor(url, pushUrl, camKey, token, keepTimeout = 30000, keepCount = 2) {
     super();
+    this.__cam_key = camKey;
+    this.__token = token;
     this.__org_push_url = url;
     this.__remote_push_url = pushUrl;
     this.__autoInterval = null;
+    this.__autoReleaseCount = 0;
+    this.keepTimeout = keepTimeout;
+    this.keepCount = keepCount;
     console.log("push", url, pushUrl);
     this.sw = cp.spawn(IS_WIN32 ? 'cmd' : '/bin/sh', [IS_WIN32 ? '/c' : '-c', `ffmpeg -stimeout 3000000 -i ${url} -rtsp_transport tcp -vcodec copy -acodec copy -f rtsp ${pushUrl}`], { detached: false });
     this.sw.stdout.on('data', data => {
@@ -25,7 +30,7 @@ class CamSteamPusher extends EventEmitter {
     });
     this.sw.on('close', (code) => {
       //console.log('sw close', code, this.__autoInterval);
-      this.emit('close', this);
+      this.emit('close', this.__cam_key, this.__token);
       if (this.__autoInterval) {
         clearInterval(this.__autoInterval);
       }
@@ -66,14 +71,20 @@ class CamSteamPusher extends EventEmitter {
           return;
         }
         if (body.code === 1000 && body.data) {
-          console.log('no users，stop push stream！', $me.__org_push_url, $me.__remote_push_url);
-          //可以释放
-          clearInterval($me.__autoInterval);
-          $me.__autoInterval = null;
-          $me.stop();
+          $me.__autoReleaseCount++;
+          if ($me.__autoReleaseCount === $me.keepCount) {
+            console.log('auto release！', $me.__org_push_url, $me.__remote_push_url);
+            //可以释放
+            clearInterval($me.__autoInterval);
+            $me.__autoInterval = null;
+            $me.stop();
+          }
+        } else {
+          $me.__autoReleaseCount = 0;
         }
+        //console.log($me.__autoReleaseCount);
       });
-    }, 30000);
+    }, $me.keepTimeout);
   }
 }
 module.exports = CamSteamPusher;
