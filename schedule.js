@@ -1,13 +1,16 @@
 var schedule = require('node-schedule'),
-  planSetting = require('./setting-plan'),
+  upgrade = require('./upgrade');
+planSetting = require('./setting-plan'),
   service = require('./service'),
   ioSetting = require('./setting-io');
+
 /**
  * 添加任务到调度
  * @param {Object} task 
  */
 function __addPlanToSchedule(task) {
   let cron = __buildCronWithPlan(task);
+  console.log('add_plan', task.id, cron);
   schedule.scheduleJob(task.id, cron, __planHandler);
 }
 
@@ -61,10 +64,16 @@ planSetting.on('add_plan', function (task) {
 
 //定时任务配置移除
 planSetting.on('remove_plan', function (id) {
+  console.log('remove_plan', id);
   schedule.cancelJob(id);
 });
 
 //初始化任务
 planSetting.config.plan.forEach(__addPlanToSchedule);
 
-module.exports = {};
+//检查固件更新
+let time = new Date(),
+  s = time.getSeconds(),
+  m = time.getMinutes();
+schedule.scheduleJob('check_firmware', `${s} ${m} * * * *`, upgrade.checkFirmware);
+module.exports = { schedule };
