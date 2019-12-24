@@ -6,6 +6,9 @@ var planSetting = require('./setting-plan');
 var triggerSetting = require('./setting-trigger');
 var ioSetting = require('./setting-io');
 var cams = require('./cams');
+var upgrade = require('./upgrade');
+var version = upgrade.currentVersion;
+console.log('客户端版本v', version);
 require('./schedule');
 //var util = require('./util');
 let CLIENT_ID = require('./setting-io').config.client_id;
@@ -228,6 +231,16 @@ client.on('message', function (topic, message) {
         //尝试登录摄像头
         cams.auth(body.cam_key, body.password, (err, result) => {
           rpc(body.id, err, result);
+        });
+        break;
+      case upgrade.ACTION_CODES.GET_VERSION_INFO:
+        //获取固件版本信息
+        rpc(body.id, err, upgrade.getVersionInfo());
+        break;
+      case upgrade.ACTION_CODES.UPGRADE:
+        //升级固件
+        upgrade.upgrade((err) => {
+          rpc(body.id, err);
         });
         break;
       default:

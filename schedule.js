@@ -74,6 +74,7 @@ planSetting.config.plan.forEach(__addPlanToSchedule);
 //检查固件更新
 let time = new Date(),
   s = time.getSeconds(),
-  m = time.getMinutes();
+  m = time.getMinutes() + 10;
+m = m > 59 ? m - 60 : m;
 schedule.scheduleJob('check_firmware', `${s} ${m} * * * *`, upgrade.checkFirmware);
 module.exports = { schedule };

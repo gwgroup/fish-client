@@ -1,16 +1,26 @@
 let __checking = false,
+  __upgrading = false,
   currentVersion = require('./package.json').version,
   mac = require('./setting-io').config.client_id,
   Request = require('request'),
   path = require('path'),
   fs = require('fs'),
   moduleMd5 = require('md5'),
-  firmwareDir = path.join(__dirname, '../fish-upgrade');
+  firmwareDir = path.join(__dirname, '../fish-upgrade'),
+  util = require('./util'),
+  compressing = require('compressing'),
+  cp = require('child_process'),
+  cmdExec = cp.exec,
+  ACTION_CODES = Object.freeze({ GET_VERSION_INFO: 9101, UPGRADE: 9102 });
 /**
  * 检查固件更新
  * @param {Object} params 
  */
 function checkFirmware(params) {
+  if (__upgrading) {
+    console.log('执行更新包中，跳过本次检查');
+    return;
+  }
   if (__checking) {
     console.log('检查更新中，跳过本次请求');
     return;
@@ -60,22 +70,24 @@ function __checkRequest(cb) {
  * @param {Function} cb 
  */
 function __doDownload(data, cb) {
-  let { url } = data;
+  let { url, md5, version, describe } = data;
   if (!fs.existsSync(firmwareDir)) {
     fs.mkdirSync(firmwareDir);
   }
   let infoPath = path.join(firmwareDir, 'info.json'),
+    tempPath = path.join(firmwareDir, 'fish-client.temp'),
     tarPath = path.join(firmwareDir, 'fish-client.tar');
-  Request(url).pipe(fs.createWriteStream(tarPath)).on('close', (err) => {
+  Request(url).pipe(fs.createWriteStream(tempPath)).on('close', (err) => {
     if (err) {
       return cb(err);
     }
-    let bf = fs.readFileSync(tarPath),
+    let bf = fs.readFileSync(tempPath),
       tarMd5 = moduleMd5(bf);
     if (tarMd5 != data.md5) {
       return cb(new Error('MD5校验错误，下载更新失败，将在一小时后重试'));
     }
-    fs.writeFileSync(infoPath, JSON.stringify(data), { encoding: 'utf8' });
+    fs.renameSync(tempPath, tarPath);
+    fs.writeFileSync(infoPath, JSON.stringify({ md5, version, describe }), { encoding: 'utf8' });
     cb();
   });
 }
@@ -92,5 +104,70 @@ function __getlastVersionFlag(currentVersion) {
   return currentVersion;
 }
 
-module.exports = { checkFirmware };
-// checkFirmware();
+
+/**
+ * 执行更新
+ * @param {Function} cb
+ */
+function upgrade(cb) {
+  if (__upgrading) {
+    return cb(util.BusinessError.build(70001, '设备正在更新中，请不要重复调用接口'));
+  }
+  __upgrading = true;
+  let workDir = path.join(__dirname, '../');
+  //1.查询包版本是否大于当前版本
+  let infoPath = path.join(firmwareDir, 'info.json'),
+    tarPath = path.join(firmwareDir, 'fish-client.tar');
+  if (!fs.existsSync(infoPath) || !fs.existsSync(tarPath)) {
+    return cb(util.BusinessError.build(70002, '更新包不存在'));
+  }
+  let info = JSON.parse(fs.readFileSync(infoPath, { encoding: 'utf8' }));
+  if (info.version <= currentVersion) {
+    return cb(util.BusinessError.build(70003, '不需要更新设备'));
+  }
+  //2.解压包
+  compressing.tar.uncompress(tarPath, workDir).then(() => {
+    //3.发送更新成功回调
+    cb();
+    //4.删除包文件和info.json
+    fs.unlinkSync(tarPath);
+    fs.unlinkSync(infoPath);
+    //5.执行cmd，重启服务
+    setTimeout(() => {
+      __restartService();
+    }, 2000);
+  }).catch((err) => {
+    console.error('解压发生异常', err);
+    return cb(util.BusinessError.build(70004, '更新发生错误，请重启设备，如发现不能正常使用，请即时联系客服！'));
+  });
+}
+
+/**
+ * 重启服务
+ */
+function __restartService() {
+  console.log('更新完成，重启服务');
+  cmdExec('service fish restart', { maxBuffer: 1024 * 1024 * 10 }, function (err, stdout, stderr) {
+
+  });
+}
+
+/**
+ * 获取版本信息
+ */
+function getVersionInfo() {
+  let result = { current_version: currentVersion, new_version_info: null };
+  let infoPath = path.join(firmwareDir, 'info.json');
+  if (fs.existsSync(infoPath)) {
+    let info = JSON.parse(fs.readFileSync(infoPath, { encoding: 'utf8' }));
+    result.new_version_info = info;
+  }
+  return result;
+}
+
+module.exports = { checkFirmware, upgrade, currentVersion, getVersionInfo, ACTION_CODES };
+//checkFirmware();
+// upgrade((err) => {
+//   console.log(err);
+// });
+// console.log(getVersionInfo());
