@@ -37,6 +37,7 @@ function checkFirmware(params) {
       return;
     }
     __doDownload(data, (err) => {
+      __checking = false;
       if (err) {
         console.error('固件下载出错', err);
         return;
@@ -134,6 +135,7 @@ function upgrade(cb) {
     fs.unlinkSync(infoPath);
     //5.执行cmd，重启服务
     setTimeout(() => {
+      __upgrading = false;
       __restartService();
     }, 2000);
   }).catch((err) => {
