@@ -235,7 +235,7 @@ client.on('message', function (topic, message) {
         break;
       case upgrade.ACTION_CODES.GET_VERSION_INFO:
         //获取固件版本信息
-        rpc(body.id, err, upgrade.getVersionInfo());
+        rpc(body.id, undefined, upgrade.getVersionInfo());
         break;
       case upgrade.ACTION_CODES.UPGRADE:
         //升级固件
