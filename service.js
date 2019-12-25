@@ -29,6 +29,7 @@ rpio.on('warn', function (arg) {
 let baseStatus = { water_temperature: null, o2: null, ph: null, uptime: Date.now() },
   baseToDie = {};
 ioConfig.config.io.forEach(element => {
+  rpio.close(element.pin);
   baseStatus[element.code] = { opened: 0, start_time: null, duration: null };
   baseToDie[element.code] = null;
 });
