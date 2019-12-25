@@ -77,4 +77,5 @@ let time = new Date(),
   m = time.getMinutes() + 10;
 m = m > 59 ? m - 60 : m;
 schedule.scheduleJob('check_firmware', `${s} ${m} * * * *`, upgrade.checkFirmware);
+upgrade.checkFirmware();
 module.exports = { schedule };
