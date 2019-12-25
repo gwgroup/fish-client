@@ -88,7 +88,7 @@ function __doDownload(data, cb) {
       return cb(new Error('MD5校验错误，下载更新失败，将在一小时后重试'));
     }
     fs.renameSync(tempPath, tarPath);
-    fs.writeFileSync(infoPath, JSON.stringify({ md5, version, describe }), { encoding: 'utf8' });
+    fs.writeFileSync(infoPath, JSON.stringify({ md5, version, describe }));
     cb();
   });
 }
@@ -99,7 +99,7 @@ function __doDownload(data, cb) {
 function __getlastVersionFlag(currentVersion) {
   let infoPath = path.join(firmwareDir, 'info.json');
   if (fs.existsSync(infoPath)) {
-    let info = JSON.parse(fs.readFileSync(infoPath, { encoding: 'utf8' }));
+    let info = JSON.parse(fs.readFileSync(infoPath));
     return info.version > currentVersion ? info.version : currentVersion;
   }
   return currentVersion;
@@ -122,7 +122,7 @@ function upgrade(cb) {
   if (!fs.existsSync(infoPath) || !fs.existsSync(tarPath)) {
     return cb(util.BusinessError.build(70002, '更新包不存在'));
   }
-  let info = JSON.parse(fs.readFileSync(infoPath, { encoding: 'utf8' }));
+  let info = JSON.parse(fs.readFileSync(infoPath));
   if (info.version <= currentVersion) {
     return cb(util.BusinessError.build(70003, '不需要更新设备'));
   }
@@ -161,7 +161,7 @@ function getVersionInfo() {
   let result = { current_version: currentVersion, new_version_info: null };
   let infoPath = path.join(firmwareDir, 'info.json');
   if (fs.existsSync(infoPath)) {
-    let info = JSON.parse(fs.readFileSync(infoPath, { encoding: 'utf8' }));
+    let info = JSON.parse(fs.readFileSync(infoPath));
     result.new_version_info = info;
   }
   return result;
