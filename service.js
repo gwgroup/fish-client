@@ -55,6 +55,23 @@ status.__emit = function (key) {
 };
 
 /**
+ * 有新增IO，增加IO配置，状态为初始
+ */
+ioConfig.on('add_io', (io) => {
+  baseStatus[io.code] = { opened: 0, start_time: null, duration: null };
+  onsole.log('add_io', io.code);
+});
+
+/**
+ * 移除IO 执行停止IO
+ */
+ioConfig.on('remove_io', (code) => {
+  close(code, () => {
+    console.log('remove_io', code);
+  });
+});
+
+/**
  * 打开 
  * @param {String} code 
  * @param {int} duration 时长（毫秒）
