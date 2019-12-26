@@ -27,7 +27,7 @@ function findPlanWithID(id) {
 function add(plan) {
   let exitsplan = findPlanWithID(plan.id);
   if (exitsplan) {
-    return console.warn('任务已经存在，不需重复添加', plan.id);
+    return util.warn('任务已经存在，不需重复添加', plan.id);
   }
   config.plan.push(plan);
   save();
@@ -56,7 +56,7 @@ function enable(id) {
     plan.enabled = true;
     save();
   } else {
-    console.warn("任务已经不存在，不能启用", id);
+    util.warn("任务已经不存在，不能启用", id);
   }
 }
 
@@ -70,7 +70,7 @@ function disable(id) {
     plan.enabled = false;
     save();
   } else {
-    console.warn("任务已经不存在，不能禁用", id);
+    util.warn("任务已经不存在，不能禁用", id);
   }
 }
 

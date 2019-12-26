@@ -1,6 +1,6 @@
 var __set = function (obj, prop, value) {
   obj[prop] = value;
-  console.log(prop);
+  util.log(prop);
   return true;
 };
 
@@ -13,4 +13,4 @@ var p = new Proxy(target, {
 p.ary.push(37); // operation forwarded to the target
 //p.c=100;
 p.c = 100;
-console.log(target.ary);
+util.log(target.ary);

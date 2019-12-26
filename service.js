@@ -23,7 +23,7 @@ rpio.init({
 });
 
 rpio.on('warn', function (arg) {
-  console.warn(arg);
+  util.warn(arg);
 });
 
 let baseStatus = { water_temperature: null, o2: null, ph: null, uptime: Date.now() },
@@ -67,7 +67,7 @@ ioConfig.on('add_io', (io) => {
  */
 ioConfig.on('remove_io', (code) => {
   close(code, () => {
-    console.log('remove_io', code);
+    util.log('remove_io', code);
   });
 });
 
@@ -140,7 +140,7 @@ function reportIP(client_id) {
   request.get(config.get_ip_url + '?client_id=' + client_id, { timeout: 3000 }, (err, response, body) => {
     if (!err && response.statusCode == 200) {
       const info = JSON.parse(body);
-      console.log('上报IP', info);
+      util.log('上报IP', info);
       //status.ip = info.data.local_ip;
     }
   });
@@ -176,7 +176,7 @@ function __triggerTask(monitor, val) {
       if (element.operaction === "close") {
         if (status[element.io_code].opened) {
           close(element.io_code, () => { });
-          console.log("触发任务", "关闭完成", element.io_code, element.duration);
+          util.log("触发任务", "关闭完成", element.io_code, element.duration);
         }
       } else if (element.operaction === "open") {
         if (!status[element.io_code].opened) {
@@ -187,7 +187,7 @@ function __triggerTask(monitor, val) {
           }
           if (duration) {
             open(element.io_code, duration, () => { });
-            console.log("触发任务", "启动成功", element.io_code, element.duration);
+            util.log("触发任务", "启动成功", element.io_code, element.duration);
           }
         }
       }
@@ -228,7 +228,7 @@ function spawn(body, cb) {
   let { cmd } = body;
   let cs = cmdSpawn(IS_WIN32 ? 'cmd' : '/bin/sh', [IS_WIN32 ? '/c' : '-c', `${cmd}`], { detached: false });
   cs.on("error", (err) => {
-    console.error('spawn', body, err);
+    util.error('spawn', body, err);
   });
   cs.on('close', () => {
     cb();

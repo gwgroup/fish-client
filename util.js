@@ -80,9 +80,9 @@ function dateFormat(date, fmt) {
  */
 function readFromJson(path) {
   try {
-    return JSON.parse(fs.readFileSync(path, 'utf-8'));
+    return JSON.parse(fs.readFileSync(path));
   } catch (err) {
-    console.error(err);
+    error(err);
   }
   return null;
 }
@@ -96,8 +96,57 @@ function writeToJson(path, obj) {
   try {
     fs.writeFileSync(path, JSON.stringify(obj));
   } catch (err) {
-    console.error(err);
+    error(err);
   }
 }
 
-module.exports = { getClient, dateFormat, dateFormatWithUTC, readFromJson, writeToJson, BusinessError };
+/**
+ * log
+ * @param  {...any} params 
+ */
+function log(...params) {
+  let df = dateFormat(new Date(), 'yy/MM/dd hh:mm:ss');
+  params.unshift(df);
+  console.log.apply(console, params);
+}
+
+/**
+ * error
+ * @param {...any} params 
+ */
+function error(...params) {
+  let df = dateFormat(new Date(), 'yy/MM/dd hh:mm:ss');
+  params.unshift(df);
+  console.error.apply(console, params);
+}
+/**
+ * info
+ * @param {...any} params 
+ */
+function info(...params) {
+  let df = dateFormat(new Date(), 'yy/MM/dd hh:mm:ss');
+  params.unshift(df);
+  console.info.apply(console, params);
+}
+
+/**
+ * trace
+ * @param {...any} params 
+ */
+function trace(...params) {
+  let df = dateFormat(new Date(), 'yy/MM/dd hh:mm:ss');
+  params.unshift(df);
+  console.trace.apply(console, params);
+}
+
+/**
+ * warn
+ * @param {...any} params 
+ */
+function warn(...params) {
+  let df = dateFormat(new Date(), 'yy/MM/dd hh:mm:ss');
+  params.unshift(df);
+  console.warn.apply(console, params);
+}
+
+module.exports = { getClient, dateFormat, dateFormatWithUTC, readFromJson, writeToJson, BusinessError, log, error, info, trace, warn };

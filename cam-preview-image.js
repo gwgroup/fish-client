@@ -39,8 +39,8 @@ function screenshotWithRtsp(rtsp, filename, cb) {
   });
 }
 module.exports = { obtainImage };
-//console.time('screenshot');
+//util.time('screenshot');
 // obtainImage({ rtsp: 'rtsp://192.168.24.7:554/stream1', client_id: "mac1", key: "192168247" }, (err, url) => {
-//   console.log(err, url);
-//   console.timeEnd('screenshot');
+//   util.log(err, url);
+//   util.timeEnd('screenshot');
 // });

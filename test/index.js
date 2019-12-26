@@ -16,6 +16,6 @@ async.whilst(
     }, 2000);
   },
   (err) => {
-    console.log(client_id);
+    util.log(client_id);
   }
 );

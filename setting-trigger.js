@@ -37,7 +37,7 @@ function __findTriggerWithID(id) {
 function add(trigger) {
   let exitstrigger = __findTriggerWithID(trigger.id);
   if (exitstrigger) {
-    return console.warn('触发任务已经存在，不需重复添加', trigger.id);
+    return util.warn('触发任务已经存在，不需重复添加', trigger.id);
   }
   config.trigger.push(trigger);
   save();
@@ -64,7 +64,7 @@ function enable(id) {
     trigger.enabled = true;
     save();
   } else {
-    console.warn("任务已经不存在，不能启用", id);
+    util.warn("任务已经不存在，不能启用", id);
   }
 }
 
@@ -78,7 +78,7 @@ function disable(id) {
     trigger.enabled = false;
     save();
   } else {
-    console.warn("任务已经不存在，不能禁用", id);
+    util.warn("任务已经不存在，不能禁用", id);
   }
 }
 

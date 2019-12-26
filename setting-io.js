@@ -8,7 +8,7 @@ let ACTION_CODES = Object.freeze({ ADD_IO: 8001, REMOVE_IO: 8002, ENABLE_IO: 800
 let EventEmitter = require('events').EventEmitter,
   ev = new EventEmitter();
 
-//console.log("io config", config, PATH);
+//util.log("io config", config, PATH);
 /**
  * 保存配置
  */
@@ -32,7 +32,7 @@ function getIoConfig(code) {
 function add(io) {
   let exitsio = getIoConfig(io.code);
   if (exitsio) {
-    return console.warn('IO已经存在，不需重复添加', io.code);
+    return util.warn('IO已经存在，不需重复添加', io.code);
   }
   config.io.push(io);
   save();
@@ -62,7 +62,7 @@ function enable(code) {
     save();
     ev.emit("enable_io", io);
   } else {
-    console.warn("IO已经不存在，不能启用", code);
+    util.warn("IO已经不存在，不能启用", code);
   }
 }
 
@@ -77,7 +77,7 @@ function disable(code) {
     save();
     ev.emit("disable_io", io);
   } else {
-    console.warn("IO已经不存在，不能禁用", code);
+    util.warn("IO已经不存在，不能禁用", code);
   }
 }
 
@@ -93,7 +93,7 @@ function rename(code, name) {
     save();
     ev.emit("rename", io);
   } else {
-    console.warn("IO已经不存在，修改名字", code);
+    util.warn("IO已经不存在，修改名字", code);
   }
 }
 
@@ -108,7 +108,7 @@ function calibrationFeeder(code, weightPerSecond) {
     item.weight_per_second = weightPerSecond;
     save();
   } else {
-    console.warn("IO已经不存在或类型不正确", code);
+    util.warn("IO已经不存在或类型不正确", code);
   }
 }
 
@@ -123,7 +123,7 @@ function power(code, power_w) {
     item.power_w = power_w;
     save();
   } else {
-    console.warn("IO已经不存在或类型不正确", code);
+    util.warn("IO已经不存在或类型不正确", code);
   }
 }
 

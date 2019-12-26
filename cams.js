@@ -125,7 +125,7 @@ function scan(cb) {
             if (!err) {
               camsConfig.set(key, config);
             } else {
-              console.error('scan build profile', err);
+              util.error('scan build profile', err);
             }
             cb();
           });
@@ -141,7 +141,7 @@ function scan(cb) {
           }
           let lastprofile = item.profiles[item.profiles.length - 1];
           CamPreviewImage.obtainImage({ rtsp: lastprofile.org_rtsp_url, client_id: CLIENT_ID, key: key }, (err, url) => {
-            //console.log(err, url);
+            //util.log(err, url);
             if (err) {
               return cb(err);
             }
@@ -154,7 +154,7 @@ function scan(cb) {
       }
     ], (err) => {
       if (err) {
-        console.error("扫描摄像头发生异常", err);
+        util.error("扫描摄像头发生异常", err);
       }
       cb(undefined, getCamsConfig());
     }
@@ -298,7 +298,7 @@ function move(key, pan) {
     try {
       cc.ref.relativeMove({ x: x ? x : 0, y: y ? y : 0 });
     } catch (ex) {
-      console.error(ex);
+      util.error(ex);
     }
   }
 }
@@ -310,7 +310,7 @@ function move(key, pan) {
  * @param {Function} cb 
  */
 function auth(key, password, cb) {
-  console.log('auth start', key, password);
+  util.log('auth start', key, password);
   //1.尝试获取摄像头对象
   //2.尝试连接
   //3.获取profiles
@@ -360,7 +360,7 @@ function auth(key, password, cb) {
           });
         }, (err) => {
           if (err) {
-            console.error('auth get stream uri', err);
+            util.error('auth get stream uri', err);
             cc.profiles.clear();
             return cb(util.BusinessError.build(50032, '与摄像头通讯异常，请稍后重试'));
           }
@@ -374,7 +374,7 @@ function auth(key, password, cb) {
         let lastprofile = cc.profiles[cc.profiles.length - 1];
         CamPreviewImage.obtainImage({ rtsp: lastprofile.org_rtsp_url, client_id: CLIENT_ID, key: key }, (err, url) => {
           if (err) {
-            console.error('auth obtain image', err);
+            util.error('auth obtain image', err);
           }
           cc.preview_image = url;
           cb();
@@ -396,24 +396,24 @@ function auth(key, password, cb) {
 module.exports = { getCamsConfig, switchProfile, noticePushStream, noticeStopStream, scan, move, auth, ACTION_CODES };
 
 scan((err, result) => {
-  console.log('开机扫描摄像头', err, JSON.stringify(result));
+  util.log('开机扫描摄像头', err, JSON.stringify(result));
 });
 
 // setTimeout(() => {
 //   noticePushStream("1921680101", (err) => {
-//     console.log("notice", err);
+//     util.log("notice", err);
 //   });
 // }, 15000);
 
 // setTimeout(() => {
 //   switchProfile("192168247", "profile_1", (err) => {
-//     console.log("switch", err);
+//     util.log("switch", err);
 //   });
 // }, 60000);
 
 // setTimeout(() => {
 //   noticeStopStream("192168247", () => {
-//     console.log('stop');
+//     util.log('stop');
 //   });
 // }, 120000);
 
@@ -421,4 +421,4 @@ scan((err, result) => {
 //   switchProfile("192168247", "profile_1");
 // }, 60000);
 
-//console.log(JSON.stringify(cams));
+//util.log(JSON.stringify(cams));

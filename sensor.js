@@ -1,25 +1,26 @@
 var SerialPort = require('serialport'),
+  util = require('./util'),
   async = require('async'),
   EventEmitter = require('events').EventEmitter,
   ev = new EventEmitter(),
   port = new SerialPort('/dev/ttyS0', { baudRate: 9600 }, function (err) {
     if (err) {
-      return console.error('传感器', '连接串口失败', err.message);
+      return util.error('传感器', '连接串口失败', err.message);
     }
-    console.log('传感器', '连接串口成功');
+    util.log('传感器', '连接串口成功');
     async.forever((next) => { __searchData(next); }, (err) => {
-      console.error('数据检测中断', err);
+      util.error('数据检测中断', err);
     });
   }),
   __lock = false;
 
 function lock() {
-  console.log('locked!');
+  util.log('locked!');
   port.read();
   __lock = true;
 }
 function unlock() {
-  console.log('unlock!');
+  util.log('unlock!');
   port.read();
   __lock = false;
 }
@@ -80,7 +81,7 @@ function __phChange(data) {
   let val = null;
   if (data && data.length >= 7 && data[0] === 0x02 && data[1] === 0x03 && data[2] === 0x02) {
     val = Math.floor((data[3] * 256 + data[4]) / 10) / 10;
-    //console.log('ph\t',val); 
+    //util.log('ph\t',val); 
   }
   ev.emit('ph', val);
 }
@@ -93,7 +94,7 @@ function __waterTemperatureChange(data) {
   let val = null;
   if (data && data.length >= 7 && data[0] === 0x06 && data[1] === 0x03 && data[2] === 0x02) {
     val = (data[3] * 256 + data[4]) / 10;
-    //console.log('water_temperature\t',val); 
+    //util.log('water_temperature\t',val); 
   }
   ev.emit('water_temperature', val);
 }
@@ -106,7 +107,7 @@ function __o2Change(data) {
   let val = null;
   if (data && data.length >= 7 && data[0] === 0x06 && data[1] === 0x03 && data[2] === 0x02) {
     val = Math.floor((data[3] * 256 + data[4]) / 10) / 10;
-    //console.log('o2\t',val);  
+    //util.log('o2\t',val);  
   }
   ev.emit('o2', val);
 }

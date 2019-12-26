@@ -1,8 +1,9 @@
 var schedule = require('node-schedule'),
-  upgrade = require('./upgrade');
-planSetting = require('./setting-plan'),
+  upgrade = require('./upgrade'),
+  planSetting = require('./setting-plan'),
   service = require('./service'),
-  ioSetting = require('./setting-io');
+  ioSetting = require('./setting-io'),
+  util = require('./util');
 
 /**
  * 添加任务到调度
@@ -10,7 +11,7 @@ planSetting = require('./setting-plan'),
  */
 function __addPlanToSchedule(task) {
   let cron = __buildCronWithPlan(task);
-  console.log('add_plan', task.id, cron);
+  util.log('add_plan', task.id, cron);
   schedule.scheduleJob(task.id, cron, __planHandler);
 }
 
@@ -21,7 +22,7 @@ function __addPlanToSchedule(task) {
  */
 function __planHandler(fireTime) {
   let job = this;
-  console.log(fireTime, job.name);
+  util.log(fireTime, job.name);
   let id = job.name,
     task = planSetting.findPlanWithID(id);
   if (task && task.enabled) {
@@ -33,12 +34,12 @@ function __planHandler(fireTime) {
     if (duration) {
       service.open(task.io_code, duration, (err) => {
         if (err) {
-          console.warn("任务启动失败，", err.message);
+          util.warn("任务启动失败，", err.message);
         }
       });
     }
   } else {
-    console.warn('已被禁止或移除的任务', id);
+    util.warn('已被禁止或移除的任务', id);
   }
 }
 
@@ -64,7 +65,7 @@ planSetting.on('add_plan', function (task) {
 
 //定时任务配置移除
 planSetting.on('remove_plan', function (id) {
-  console.log('remove_plan', id);
+  util.log('remove_plan', id);
   schedule.cancelJob(id);
 });
 

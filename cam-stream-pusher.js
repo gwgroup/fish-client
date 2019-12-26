@@ -8,6 +8,7 @@
 let EventEmitter = require('events').EventEmitter;
 var cp = require('child_process');
 var Request = require('request');
+var util = require('./util');
 const IS_WIN32 = require('os').platform() === 'win32';
 class CamSteamPusher extends EventEmitter {
   constructor(url, pushUrl, camKey, token, keepTimeout = 30000, keepCount = 2) {
@@ -20,7 +21,7 @@ class CamSteamPusher extends EventEmitter {
     this.__autoReleaseCount = 0;
     this.keepTimeout = keepTimeout;
     this.keepCount = keepCount;
-    console.log("push", url, pushUrl);
+    util.log("push", url, pushUrl);
     this.sw = cp.spawn(IS_WIN32 ? 'cmd' : '/bin/sh', [IS_WIN32 ? '/c' : '-c', `ffmpeg -stimeout 3000000 -i ${url} -rtsp_transport tcp -vcodec copy -acodec copy -f rtsp ${pushUrl}`], { detached: false });
     this.sw.stdout.on('data', data => {
       this.emit('log', data);
@@ -29,7 +30,7 @@ class CamSteamPusher extends EventEmitter {
       this.emit('err', data);
     });
     this.sw.on('close', (code) => {
-      //console.log('sw close', code, this.__autoInterval);
+      //util.log('sw close', code, this.__autoInterval);
       this.emit('close', this.__cam_key, this.__token);
       if (this.__autoInterval) {
         clearInterval(this.__autoInterval);
@@ -51,7 +52,7 @@ class CamSteamPusher extends EventEmitter {
       }
 
     } catch (ex) {
-      console.error(ex);
+      util.error(ex);
     }
   }
   /**
@@ -73,7 +74,7 @@ class CamSteamPusher extends EventEmitter {
         if (body.code === 1000 && body.data) {
           $me.__autoReleaseCount++;
           if ($me.__autoReleaseCount === $me.keepCount) {
-            console.log('auto release！', $me.__org_push_url, $me.__remote_push_url);
+            util.log('auto release！', $me.__org_push_url, $me.__remote_push_url);
             //可以释放
             clearInterval($me.__autoInterval);
             $me.__autoInterval = null;
@@ -82,7 +83,7 @@ class CamSteamPusher extends EventEmitter {
         } else {
           $me.__autoReleaseCount = 0;
         }
-        //console.log($me.__autoReleaseCount);
+        //util.log($me.__autoReleaseCount);
       });
     }, $me.keepTimeout);
   }

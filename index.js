@@ -8,9 +8,10 @@ var ioSetting = require('./setting-io');
 var cams = require('./cams');
 var upgrade = require('./upgrade');
 var version = upgrade.currentVersion;
-console.log('客户端版本v', version);
+var util = require('./util');
+
+util.log('客户端版本v', version);
 require('./schedule');
-//var util = require('./util');
 let CLIENT_ID = require('./setting-io').config.client_id;
 const
   PRODUCT_ID = mqttConfig.productId,
@@ -24,7 +25,7 @@ const
     RPC: 5001
   };
 
-console.log('获取到客户端标识', CLIENT_ID);
+util.log('获取到客户端标识', CLIENT_ID);
 let LWT_TOPIC = `device/lwt/${PRODUCT_ID}/${CLIENT_ID}`,
   SUB_TOPIC = `device/get/${PRODUCT_ID}/${CLIENT_ID}`,
   PUB_TOPIC = `device/set/${PRODUCT_ID}/${CLIENT_ID}`,
@@ -50,7 +51,7 @@ client.subscribe(SUB_TOPIC, { qos: 0, retain: false });
 client.subscribe(PUBLIC_TOPIC, { qos: 0, retain: false });
 
 client.on('connect', function () {
-  console.log('连接上服务器');
+  util.log('连接上服务器');
   client.publish(LWT_TOPIC, JSON.stringify({ type: TYPES.ONLINE }), { qos: 2, retain: false });
   client.publish(PUB_TOPIC, JSON.stringify({ type: TYPES.DEVICE_STATUS, status: service.status }));
   service.reportIP(CLIENT_ID);
@@ -63,7 +64,7 @@ client.on('offline', function () {
 });
 client.on('message', function (topic, message) {
   try {
-    console.log(topic, message.toString('utf8'));
+    util.log(topic, message.toString('utf8'));
     body = JSON.parse(message.toString('utf8'));
     switch (body.sub_type) {
       case service.ACTION_CODES.OPEN:
@@ -236,7 +237,7 @@ client.on('message', function (topic, message) {
       case upgrade.ACTION_CODES.GET_VERSION_INFO:
         //获取固件版本信息
         let result = upgrade.getVersionInfo();
-        console.log('GET_VERSION_INFO', result);
+        util.log('GET_VERSION_INFO', result);
         rpc(body.id, undefined, result);
         break;
       case upgrade.ACTION_CODES.UPGRADE:
@@ -246,11 +247,11 @@ client.on('message', function (topic, message) {
         });
         break;
       default:
-        console.warn('未找到要处理的类型');
+        util.warn('未找到要处理的类型');
         break;
     }
   } catch (ex) {
-    console.error(ex);
+    util.error(ex);
   }
 });
 
@@ -258,7 +259,7 @@ client.on('message', function (topic, message) {
 * 监听设备状态变化
 */
 service.on('status', function (key, value) {
-  console.log(key, value);
+  util.log(key, value);
   let status = {};
   status[key] = value;
   if (client.connected) {
@@ -283,7 +284,7 @@ function rpc(id, err, data) {
   let error = undefined;
   if (err) {
     error = { message: err.message, code: err.code };
-    console.error(err);
+    util.error(err);
   }
   if (client.connected) {
     client.publish(PUB_TOPIC, JSON.stringify({ type: TYPES.RPC, id, error, data }));

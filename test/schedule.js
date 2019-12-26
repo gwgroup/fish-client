@@ -1,14 +1,14 @@
 var schedule = require('node-schedule');
 
-var task={id:"abc",cron:'*/5 * * * * *'};
+var task = { id: "abc", cron: '*/5 * * * * *' };
 
-schedule.scheduleJob(task.id,task.cron, function(fireTime){
-  console.log(fireTime,this);
+schedule.scheduleJob(task.id, task.cron, function (fireTime) {
+  util.log(fireTime, this);
 });
-console.log(schedule.scheduledJobs);
+util.log(schedule.scheduledJobs);
 setTimeout(() => {
   schedule.cancelJob("abc");
-  console.log(schedule.scheduledJobs);
+  util.log(schedule.scheduledJobs);
 }, 5000);
 
 //schedule.Job

@@ -18,17 +18,17 @@ let __checking = false,
  */
 function checkFirmware(params) {
   if (__upgrading) {
-    console.log('执行更新包中，跳过本次检查');
+    util.log('执行更新包中，跳过本次检查');
     return;
   }
   if (__checking) {
-    console.log('检查更新中，跳过本次请求');
+    util.log('检查更新中，跳过本次请求');
     return;
   }
   __checking = true;
   __checkRequest((err, data) => {
     if (err) {
-      console.error('检查更新发生错误', err);
+      util.error('检查更新发生错误', err);
       __checking = false;
       return;
     }
@@ -39,10 +39,10 @@ function checkFirmware(params) {
     __doDownload(data, (err) => {
       __checking = false;
       if (err) {
-        console.error('固件下载出错', err);
+        util.error('固件下载出错', err);
         return;
       }
-      console.log('固件已下载完成', data.version);
+      util.log('固件已下载完成', data.version);
     });
   });
 }
@@ -141,7 +141,7 @@ function upgrade(cb) {
       __restartService();
     }, 2000);
   }).catch((err) => {
-    console.error('解压发生异常', err);
+    util.error('解压发生异常', err);
     __upgrading = false;
     return cb(util.BusinessError.build(70004, '更新发生错误，请重启设备，如发现不能正常使用，请即时联系客服！'));
   });
@@ -151,7 +151,7 @@ function upgrade(cb) {
  * 重启服务
  */
 function __restartService() {
-  console.log('更新完成，重启服务');
+  util.log('更新完成，重启服务');
   cmdExec('service fish restart', { maxBuffer: 1024 * 1024 * 10 }, function (err, stdout, stderr) {
 
   });
@@ -173,6 +173,6 @@ function getVersionInfo() {
 module.exports = { checkFirmware, upgrade, currentVersion, getVersionInfo, ACTION_CODES };
 //checkFirmware();
 // upgrade((err) => {
-//   console.log(err);
+//   util.log(err);
 // });
-// console.log(getVersionInfo());
+// util.log(getVersionInfo());

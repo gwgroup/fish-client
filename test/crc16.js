@@ -1,5 +1,5 @@
 // const crc = require('node-crc');
-// console.log(crc.crc16ibm(Buffer.from('060300000001', 'hex')).toString('hex'));
+// util.log(crc.crc16ibm(Buffer.from('060300000001', 'hex')).toString('hex'));
 
 function crc16(buffer, reverse = false) {
   var crc = 0xFFFF;
@@ -18,4 +18,4 @@ function crc16(buffer, reverse = false) {
   return reverse ? crc % 0x0100 * 0x0100 + Math.floor(crc / 0x0100) : crc;
 }
 
-console.log(crc16(Buffer.from('060300000001', 'hex'), true).toString(16));
+util.log(crc16(Buffer.from('060300000001', 'hex'), true).toString(16));
