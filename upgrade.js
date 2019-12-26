@@ -120,10 +120,12 @@ function upgrade(cb) {
   let infoPath = path.join(firmwareDir, 'info.json'),
     tarPath = path.join(firmwareDir, 'fish-client.tar');
   if (!fs.existsSync(infoPath) || !fs.existsSync(tarPath)) {
+    __upgrading = false;
     return cb(util.BusinessError.build(70002, '更新包不存在'));
   }
   let info = JSON.parse(fs.readFileSync(infoPath));
   if (info.version <= currentVersion) {
+    __upgrading = false;
     return cb(util.BusinessError.build(70003, '不需要更新设备'));
   }
   //2.解压包
@@ -140,6 +142,7 @@ function upgrade(cb) {
     }, 2000);
   }).catch((err) => {
     console.error('解压发生异常', err);
+    __upgrading = false;
     return cb(util.BusinessError.build(70004, '更新发生错误，请重启设备，如发现不能正常使用，请即时联系客服！'));
   });
 }
