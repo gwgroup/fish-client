@@ -67,7 +67,7 @@ class CamSteamPusher extends EventEmitter {
         $me.__autoInterval = null;
         return;
       }
-      Request.get(`https://fish.ypcxpt.com/api/util/ed_stream_can_be_release?q=${this.__remote_push_url}`, { json: true }, (err, response, body) => {
+      Request.get(`https://fish.smartbreed.cn/api/util/ed_stream_can_be_release?q=${this.__remote_push_url}`, { json: true }, (err, response, body) => {
         if (err) {
           return;
         }

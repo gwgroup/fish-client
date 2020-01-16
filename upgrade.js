@@ -53,7 +53,7 @@ function checkFirmware(params) {
  */
 function __checkRequest(cb) {
   let version = __getlastVersionFlag(currentVersion);
-  Request.post(`https://fish.ypcxpt.com/api/util/firmware_check?mac=${mac}&version=${version}`, { json: true }, (err, response, body) => {
+  Request.post(`https://fish.smartbreed.cn/api/util/firmware_check?mac=${mac}&version=${version}`, { json: true }, (err, response, body) => {
     if (err) {
       return cb(err);
     }

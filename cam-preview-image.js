@@ -11,7 +11,7 @@ function obtainImage(params, cb) {
     if (err) {
       return cb(err);
     }
-    let r = request.post('https://fish.ypcxpt.com/api/util/file_upload', { json: true }, (err, response, body) => {
+    let r = request.post('https://fish.smartbreed.cn/api/util/file_upload', { json: true }, (err, response, body) => {
       fs.unlinkSync(filePath);
       if (err || body.code != 1000) {
         return cb(new Error('上传失败!'));

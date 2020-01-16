@@ -18,7 +18,7 @@ let ACTION_CODES = Object.freeze({ SCAN: 9001, GET_CAMS_CONFIG: 9002, START_PUSH
  *            height:480,
  *            label:"流畅",
  *            org_rtsp_url:'',
- *            rtsp_url:'rtsp://ed.ypcxpt.com/{mac}/{ip}/${token}',
+ *            rtsp_url:'rtsp://ed.smartbreed.cn/{mac}/{ip}/${token}',
  *            //push_process:null
  *            selected:true
  *          },
@@ -28,7 +28,7 @@ let ACTION_CODES = Object.freeze({ SCAN: 9001, GET_CAMS_CONFIG: 9002, START_PUSH
  *            height:1024,
  *            label:"标清",
  *            org_rtsp_url:'',
- *            rtsp_url:'rtsp://ed.ypcxpt.com/{mac}/{ip}',
+ *            rtsp_url:'rtsp://ed.smartbreed.cn/{mac}/{ip}',
  *            //push_process:null,
  *            selected:false
  *          }
@@ -110,7 +110,7 @@ function scan(cb) {
               height = bounds.height,
               label = QUALITY_LABELS[index],
               //远程rtsp——url
-              rtsp_url = `rtsp://ed.ypcxpt.com/${CLIENT_ID}/${key}/${token}`;
+              rtsp_url = `rtsp://ed.smartbreed.cn/${CLIENT_ID}/${key}/${token}`;
             //2.2.1获取原始流地址
             cam.getStreamUri({ protocol: 'RTSP', profileToken: token }, function (err, stream) {
               if (err) {
@@ -347,7 +347,7 @@ function auth(key, password, cb) {
             height = bounds.height,
             label = QUALITY_LABELS[index],
             //远程rtsp——url
-            rtsp_url = `rtsp://ed.ypcxpt.com/${CLIENT_ID}/${key}/${token}`;
+            rtsp_url = `rtsp://ed.smartbreed.cn/${CLIENT_ID}/${key}/${token}`;
           //2.2.1获取原始流地址
           cam.getStreamUri({ protocol: 'RTSP', profileToken: token }, function (err, stream) {
             if (err) {
