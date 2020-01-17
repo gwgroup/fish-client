@@ -36,6 +36,7 @@ function checkFirmware(params) {
       __checking = false;
       return;
     }
+    util.log('开始下载固件');
     __doDownload(data, (err) => {
       __checking = false;
       if (err) {
