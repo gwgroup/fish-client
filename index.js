@@ -282,6 +282,7 @@ service.on('report', function (report) {
  * 重置网络配置后,尝试立即重连MQTT
  */
 service.on('reset_net', function () {
+  console.log('reset_net');
   client.reconnect();
 });
 

@@ -19,7 +19,7 @@ function startLink() {
   setTimeout(
     () => {
       runAp();
-      __cancel_timeout_itv = setTimeout(cancelLink, 2 * 60 * 1000);
+      __cancel_timeout_itv = setTimeout(cancelLink, 3 * 60 * 1000);
     }, 10);
 }
 /**
@@ -49,7 +49,7 @@ function runAp() {
  */
 function stopAp() {
   if (__cancel_timeout_itv) {
-    clearInterval(__cancel_timeout_itv);
+    clearTimeout(__cancel_timeout_itv);
     __cancel_timeout_itv = null;
   }
   if (__server) {
