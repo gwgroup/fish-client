@@ -285,7 +285,7 @@ network.on('end', () => {
  * @param {Number} status 0.不在线， 1.配网中1，2.尝试连接中，3.在线 
  */
 function switchStatusLamp(status) {
-  console.log('switch status:', status);
+  util.log('switch status:', status);
   if (__net_status_current === status) {
     return;
   }

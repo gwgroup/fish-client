@@ -1,4 +1,5 @@
 const dgram = require('dgram');
+let util = require('./util');
 /**
  * UDP 服务类
  */
@@ -12,10 +13,10 @@ class UDPServer {
   constructor(port = 9999, multicastAddr = '224.100.100.100', handler) {
     this.server = dgram.createSocket('udp4');
     this.server.on('close', () => {
-      console.log('socket已关闭');
+      util.log('socket已关闭');
     });
     this.server.on('error', (err) => {
-      console.error(err);
+      util.error(err);
     });
     this.server.on('listening', () => {
       // this.server.addMembership(multicastAddr);

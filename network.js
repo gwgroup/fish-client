@@ -2,7 +2,8 @@ let EventEmitter = require('events').EventEmitter,
   cp = require('child_process'),
   APProcess = require('./network-ap-process'),
   UDPServer = require('./network-udp-server'),
-  ev = new EventEmitter();
+  ev = new EventEmitter(),
+  util = require('./util');
 let __started = false,//false是没有开始配网，true是已经开始配网
   __cancel_timeout_itv = null,//超时取消配网定时器
   __server = null,//udp组播接收服务
@@ -13,7 +14,7 @@ let __started = false,//false是没有开始配网，true是已经开始配网
  */
 function startLink() {
   if (__started) { return; }
-  console.log('开始配网');
+  util.log('开始配网');
   __started = true;
   ev.emit('start');
   setTimeout(
@@ -29,7 +30,7 @@ function cancelLink() {
   if (!__started) {
     return;
   }
-  console.log('取消配网');
+  util.log('取消配网');
   __started = false;
   stopAp();
   reconnectWifi();
@@ -68,12 +69,12 @@ function stopAp() {
  * @param {Object} rinfo 
  */
 function udpHandler(msg, rinfo) {
-  console.log('handler', msg.toString(), rinfo);
+  util.log('handler', msg.toString(), rinfo);
   let data = null;
   try {
     data = JSON.parse(msg.toString('utf8'));
   } catch (ex) {
-    console.error('配网数据解析错误', ex);
+    util.error('配网数据解析错误', ex);
   }
   if (!data) {
     return;
@@ -106,9 +107,9 @@ function noniceClient(address, port, message, cb) {
 function config(ssid, psk) {
   cp.execFile('/home/work/create_link.sh', [`"${ssid}"`, `"${psk}"`], { shell: true }, (err) => {
     if (err) {
-      console.error('配网发生错误', err);
+      util.error('配网发生错误', err);
     }
-    console.log('配网完成');
+    util.log('配网完成');
   });
 }
 
