@@ -39,6 +39,7 @@ var client = mqtt.connect(MQTT_URL, {
   ca: mqttConfig.ca,
   reconnecting: true,
   resubscribe: true,
+  keepalive: 10,
   will: {
     topic: LWT_TOPIC,
     payload: JSON.stringify({ type: TYPES.OFFLINE }),

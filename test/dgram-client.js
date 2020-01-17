@@ -19,5 +19,5 @@ client.on('message', (msg, rinfo) => {
 client.bind();
 
 function send() {
-  client.send(JSON.stringify({ ssid: "fish", psk: "1234567890" }), '9999', '192.168.12.1');
+  client.send(JSON.stringify({ ssid: "bgn24", psk: "1211211211" }), '9999', '192.168.12.1');
 }

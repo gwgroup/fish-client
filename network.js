@@ -16,8 +16,11 @@ function startLink() {
   console.log('开始配网');
   __started = true;
   ev.emit('start');
-  runAp();
-  __cancel_timeout_itv = setTimeout(cancelLink, 2 * 60 * 1000);
+  setTimeout(
+    () => {
+      runAp();
+      __cancel_timeout_itv = setTimeout(cancelLink, 2 * 60 * 1000);
+    }, 10);
 }
 /**
  * 取消配网
