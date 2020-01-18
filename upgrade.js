@@ -83,14 +83,18 @@ function __doDownload(data, cb) {
     if (err) {
       return cb(err);
     }
-    let bf = fs.readFileSync(tempPath),
-      tarMd5 = moduleMd5(bf);
-    if (tarMd5 != data.md5) {
-      return cb(new Error('MD5校验错误，下载更新失败，将在一小时后重试'));
-    }
-    fs.renameSync(tempPath, tarPath);
-    fs.writeFileSync(infoPath, JSON.stringify({ md5, version, describe }));
-    cb();
+    fs.readFile(tempPath, (err, bf) => {
+      if (err) {
+        return cb(err);
+      }
+      let tarMd5 = moduleMd5(bf);
+      if (tarMd5 != data.md5) {
+        return cb(new Error('MD5校验错误，下载更新失败，将在一小时后重试'));
+      }
+      fs.renameSync(tempPath, tarPath);
+      fs.writeFileSync(infoPath, JSON.stringify({ md5, version, describe }));
+      cb();
+    });
   });
 }
 /**
