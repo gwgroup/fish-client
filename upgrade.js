@@ -1,11 +1,11 @@
 let __checking = false,
   __upgrading = false,
+  upgradeFork = require('./upgrade-fork'),
   currentVersion = require('./package.json').version,
   mac = require('./setting-io').config.client_id,
   Request = require('request'),
   path = require('path'),
   fs = require('fs'),
-  moduleMd5 = require('md5'),
   firmwareDir = path.join(__dirname, '../fish-upgrade'),
   util = require('./util'),
   compressing = require('compressing'),
@@ -72,30 +72,8 @@ function __checkRequest(cb) {
  * @param {Function} cb 
  */
 function __doDownload(data, cb) {
-  let { url, md5, version, describe } = data;
-  if (!fs.existsSync(firmwareDir)) {
-    fs.mkdirSync(firmwareDir);
-  }
-  let infoPath = path.join(firmwareDir, 'info.json'),
-    tempPath = path.join(firmwareDir, 'fish-client.temp'),
-    tarPath = path.join(firmwareDir, 'fish-client.tar');
-  Request(url).pipe(fs.createWriteStream(tempPath)).on('close', (err) => {
-    if (err) {
-      return cb(err);
-    }
-    fs.readFile(tempPath, (err, bf) => {
-      if (err) {
-        return cb(err);
-      }
-      let tarMd5 = moduleMd5(bf);
-      if (tarMd5 != data.md5) {
-        return cb(new Error('MD5校验错误，下载更新失败，将在一小时后重试'));
-      }
-      fs.renameSync(tempPath, tarPath);
-      fs.writeFileSync(infoPath, JSON.stringify({ md5, version, describe }));
-      cb();
-    });
-  });
+  //let { url, md5, version, describe } = data;
+  upgradeFork.downloadFirmware(data, cb);
 }
 /**
  * 取得本地最新版本（包含未执行的更新包）
