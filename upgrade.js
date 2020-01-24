@@ -8,7 +8,6 @@ let __checking = false,
   fs = require('fs'),
   firmwareDir = path.join(__dirname, '../fish-upgrade'),
   util = require('./util'),
-  compressing = require('compressing'),
   cp = require('child_process'),
   cmdExec = cp.exec,
   ACTION_CODES = Object.freeze({ GET_VERSION_INFO: 9101, UPGRADE: 9102 });
@@ -111,34 +110,47 @@ function upgrade(cb) {
     __upgrading = false;
     return cb(util.BusinessError.build(70003, '不需要更新设备'));
   }
-  //2.解压包
-  compressing.tar.uncompress(tarPath, workDir).then(() => {
-    //3.发送更新成功回调
-    cb();
-    //4.删除包文件和info.json
-    fs.unlinkSync(tarPath);
-    fs.unlinkSync(infoPath);
-    //5.执行cmd，重启服务
-    setTimeout(() => {
-      __upgrading = false;
-      __restartService();
-    }, 2000);
-  }).catch((err) => {
-    util.error('解压发生异常', err);
+  // //2.解压包
+  // compressing.tar.uncompress(tarPath, workDir).then(() => {
+  //   //3.发送更新成功回调
+  //   cb();
+  //   //4.删除包文件和info.json
+  //   fs.unlinkSync(tarPath);
+  //   fs.unlinkSync(infoPath);
+  //   //5.执行cmd，重启服务
+  //   setTimeout(() => {
+  //     __upgrading = false;
+  //     __restartService();
+  //   }, 2000);
+  // }).catch((err) => {
+  //   util.error('解压发生异常', err);
+  //   __upgrading = false;
+  //   return cb(util.BusinessError.build(70004, '更新发生错误，请重启设备，如发现不能正常使用，请即时联系客服！'));
+  // });
+  cb();
+  setTimeout(() => {
     __upgrading = false;
-    return cb(util.BusinessError.build(70004, '更新发生错误，请重启设备，如发现不能正常使用，请即时联系客服！'));
-  });
+    __execUpgrade();
+  }, 2000);
 }
 
 /**
- * 重启服务
+ * 执行更新
  */
-function __restartService() {
-  util.log('更新完成，重启服务');
-  cmdExec('service fish restart', { maxBuffer: 1024 * 1024 * 10 }, function (err, stdout, stderr) {
-
-  });
+function __execUpgrade() {
+  let subp = cp.spawn('/home/work/upgrade.sh', { detached: true, shell: true, stdio: 'ignore' });
+  subp.unref();
 }
+
+// /**
+//  * 重启服务
+//  */
+// function __restartService() {
+//   util.log('更新完成，重启服务');
+//   cmdExec('service fish restart', { maxBuffer: 1024 * 1024 * 10 }, function (err, stdout, stderr) {
+
+//   });
+// }
 
 /**
  * 获取版本信息
