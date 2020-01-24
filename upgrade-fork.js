@@ -1,6 +1,8 @@
-var cp = require('child_process');
+var cp = require('child_process'),
+  path = require('path');
+let epath = path.join(__dirname, 'upgrade-download-md5.js');
 function downloadFirmware({ url, md5, version, describe }, cb) {
-  let child = cp.fork('./upgrade-download-md5.js', [url, md5, version, describe]);
+  let child = cp.fork(epath, [url, md5, version, describe]);
   child.on('message', (result) => {
     if (result.err) {
       return cb(new Error(result.err));
