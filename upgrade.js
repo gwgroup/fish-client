@@ -138,8 +138,9 @@ function upgrade(cb) {
  * 执行更新
  */
 function __execUpgrade() {
-  let subp = cp.spawn('/home/work/upgrade.sh', { detached: true, shell: true, stdio: 'ignore' });
+  let subp = cp.spawn('/bin/sh /home/work/upgrade.sh', { detached: true, shell: false, stdio: 'ignore' });
   subp.unref();
+  console.log('启动更新进程：', subp.pid, process.pid);
 }
 
 // /**
