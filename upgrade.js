@@ -140,7 +140,7 @@ function upgrade(cb) {
 function __execUpgrade() {
   let subp = cp.spawn('/bin/sh /home/work/upgrade.sh', { detached: true, shell: false, stdio: 'ignore' });
   subp.unref();
-  console.log('启动更新进程：', subp.pid, process.pid);
+  console.log('启动更新进程：', subp.pid, process.pid, process.ppid);
 }
 
 // /**
