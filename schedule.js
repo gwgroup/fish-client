@@ -1,5 +1,5 @@
 var schedule = require('node-schedule'),
-  upgrade = require('./upgrade'),
+  //upgrade = require('./upgrade'),
   planSetting = require('./setting-plan'),
   service = require('./service'),
   ioSetting = require('./setting-io'),
@@ -72,11 +72,11 @@ planSetting.on('remove_plan', function (id) {
 //初始化任务
 planSetting.config.plan.forEach(__addPlanToSchedule);
 
-//检查固件更新
-let time = new Date(),
-  s = time.getSeconds(),
-  m = time.getMinutes() + 10;
-m = m > 59 ? m - 60 : m;
-schedule.scheduleJob('check_firmware', `${s} ${m} * * * *`, upgrade.checkFirmware);
-upgrade.checkFirmware();
+// //检查固件更新
+// let time = new Date(),
+//   s = time.getSeconds(),
+//   m = time.getMinutes() + 10;
+// m = m > 59 ? m - 60 : m;
+// schedule.scheduleJob('check_firmware', `${s} ${m} * * * *`, upgrade.checkFirmware);
+// upgrade.checkFirmware();
 module.exports = { schedule };

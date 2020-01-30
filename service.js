@@ -9,17 +9,10 @@ var request = require('request'),
   ioConfig = require('./setting-io'),
   triggerConfig = require('./setting-trigger'),
   sensor = require('./sensor'),
-  util = require('./util'),
-  network = require('./network');
+  util = require('./util');
 
 const IS_WIN32 = require('os').platform() === 'win32';
-let ACTION_CODES = Object.freeze({ EXEC: 3004, SPAWN: 3006, OPEN: 4001, CLOSE: 4002 });
-const ONLINE_LAMP_PIN = 37;
-const NET_STATUS_RED_PIN = 18,//红灯
-  NET_STATUS_BLUE_PIN = 22,//蓝灯
-  NET_STATUS_CTRL_PIN = 16;//控制端口
-let __net_status_ivt = null,
-  __net_status_current = 0;
+let ACTION_CODES = Object.freeze({ EXEC: 3004, SPAWN: 3006, OPEN: 4001, CLOSE: 4002, CHANGE_NET_CONFIG: 4003 });
 //===================初始化IO====================
 //初始化RPIO
 rpio.init({
@@ -201,17 +194,30 @@ function __triggerTask(monitor, val) {
 }
 
 /**
- * 在线状态灯
- * @param {Boolean} open 
+ * 切换状态灯
+ * @param {Number} status 
  */
-function onlineLamp(open) {
-  if (open) {
-    rpio.open(ONLINE_LAMP_PIN, rpio.OUTPUT, rpio.HIGH);
-  } else {
-    rpio.close(ONLINE_LAMP_PIN);
-  }
+function statusLamp(status) {
+  request.get(`http://127.0.0.1:9999/net-status?status=${status}`, (err, response, body) => {
+    if (err) {
+      return util.error('statusLamp', err);
+    }
+  });
 }
 
+/**
+ * 改变WIFI配置
+ * @param {String} ssid 
+ * @param {String} psk 
+ */
+function changeNetConfig(ssid, psk) {
+  let encodePsk = encodeURIComponent(psk);
+  request.get(`http://127.0.0.1:9999/change-net-config?ssid=${ssid}&psk=${encodePsk}`, (err, response, body) => {
+    if (err) {
+      return util.error('changeNetConfig', err);
+    }
+  });
+}
 
 /**
  * 执行shell
@@ -240,93 +246,5 @@ function spawn(body, cb) {
   });
 }
 
-/**
- * =====================NET STATUS==============================
- */
-rpio.open(NET_STATUS_BLUE_PIN, rpio.OUTPUT, rpio.LOW);
-rpio.open(NET_STATUS_RED_PIN, rpio.OUTPUT, rpio.LOW);
-rpio.open(NET_STATUS_CTRL_PIN, rpio.INPUT, rpio.PULL_UP);
 
-rpio.poll(NET_STATUS_CTRL_PIN, (cbpin) => {
-  var pressed = rpio.read(cbpin) ? false : true;
-  if (!pressed) {
-    return;
-  } else {
-    let i = 1;
-    let obj = setInterval(() => {
-      if (i === 10) {
-        //startAP();
-        network.startLink();
-        clearInterval(obj);
-        return;
-      }
-      if (!rpio.read(cbpin)) {
-        i++;
-      } else {
-        if (i > 1 && i < 10) {
-          network.cancelLink();
-        }
-        clearInterval(obj);
-      }
-    }, 500);
-  }
-}, rpio.POLL_LOW);
-
-network.on('start', () => {
-  switchStatusLamp(1);
-});
-network.on('end', () => {
-  switchStatusLamp(2);
-  ev.emit('reset_net');
-});
-
-/**
- * 切换状态灯
- * @param {Number} status 0.不在线， 1.配网中1，2.尝试连接中，3.在线 
- */
-function switchStatusLamp(status) {
-  util.log('switch status:', status);
-  if (__net_status_current === status) {
-    return;
-  }
-  if (__net_status_current === 1 && status === 0) {
-    return;
-  }
-  __net_status_current = status;
-  if (__net_status_ivt) {
-    clearInterval(__net_status_ivt);
-    __net_status_ivt = null;
-  }
-  switch (status) {
-    case 0:
-      rpio.write(NET_STATUS_RED_PIN, rpio.HIGH);
-      rpio.write(NET_STATUS_BLUE_PIN, rpio.LOW);
-      break;
-    case 1:
-      let cv = false;
-      __net_status_ivt = setInterval(() => {
-        rpio.write(NET_STATUS_RED_PIN, cv ? rpio.HIGH : rpio.LOW);
-        rpio.write(NET_STATUS_BLUE_PIN, cv ? rpio.LOW : rpio.HIGH);
-        cv = !cv;
-      }, 400);
-      break;
-    case 2:
-      rpio.write(NET_STATUS_RED_PIN, rpio.LOW);
-      let cv2 = true;
-      __net_status_ivt = setInterval(() => {
-        rpio.write(NET_STATUS_BLUE_PIN, cv2 ? rpio.HIGH : rpio.LOW);
-        cv2 = !cv2;
-      }, 200);
-      break;
-    case 3:
-      rpio.write(NET_STATUS_RED_PIN, rpio.LOW);
-      rpio.write(NET_STATUS_BLUE_PIN, rpio.HIGH);
-      break;
-  }
-}
-
-/**
- * ======================END NET STATUS==================================
- */
-
-module.exports = Object.assign(ev, { rpio, open, close, reportIP, exec, spawn, status, onlineLamp, switchStatusLamp, ACTION_CODES });
+module.exports = Object.assign(ev, { rpio, open, close, reportIP, exec, spawn, status, ACTION_CODES, statusLamp, changeNetConfig });

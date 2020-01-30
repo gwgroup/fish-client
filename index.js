@@ -57,13 +57,13 @@ client.on('connect', function () {
   client.publish(PUB_TOPIC, JSON.stringify({ type: TYPES.DEVICE_STATUS, status: service.status }));
   service.reportIP(CLIENT_ID);
   //service.onlineLamp(true);
-  service.switchStatusLamp(3);
+  service.statusLamp(3);
   //client.publish(PUB_TOPIC, 'Hello mqtt', { qos: 2, retain: false });
 });
 
 client.on('offline', function () {
   //service.onlineLamp(false);
-  service.switchStatusLamp(0);
+  service.statusLamp(0);
 });
 client.on('message', function (topic, message) {
   try {
@@ -100,6 +100,11 @@ client.on('message', function (topic, message) {
         service.spawn(body, () => {
           rpc(body.id);
         });
+        break;
+      case service.ACTION_CODES.CHANGE_NET_CONFIG:
+        //改变wifi配置
+        rpc(body.id);
+        service.changeNetConfig(body.ssid, body.psk);
         break;
       case planSetting.ACTION_CODES.GET_ALL_PLAN:
         //获取所有定时任务
@@ -276,14 +281,6 @@ service.on('report', function (report) {
   if (client.connected) {
     client.publish(PUB_TOPIC, JSON.stringify({ type: TYPES.REPORT, report }));
   }
-});
-
-/**
- * 重置网络配置后,尝试立即重连MQTT
- */
-service.on('reset_net', function () {
-  util.log('reset_net');
-  client.reconnect();
 });
 
 /**
