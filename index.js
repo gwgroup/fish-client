@@ -9,7 +9,7 @@ var cams = require('./cams');
 var upgrade = require('./upgrade');
 var version = upgrade.currentVersion;
 var util = require('./util');
-
+var __init_scan_cams = false;
 util.log('客户端版本v', version);
 require('./schedule');
 let CLIENT_ID = require('./setting-io').config.client_id;
@@ -58,6 +58,12 @@ client.on('connect', function () {
   service.reportIP(CLIENT_ID);
   //service.onlineLamp(true);
   service.statusLamp(3);
+  if (!__init_scan_cams) {
+    __init_scan_cams = true;
+    cams.scan((err, result) => {
+      util.log('联网扫描摄像头', err, JSON.stringify(result));
+    });
+  }
   //client.publish(PUB_TOPIC, 'Hello mqtt', { qos: 2, retain: false });
 });
 

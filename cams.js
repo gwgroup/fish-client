@@ -395,9 +395,9 @@ function auth(key, password, cb) {
 }
 module.exports = { getCamsConfig, switchProfile, noticePushStream, noticeStopStream, scan, move, auth, ACTION_CODES };
 
-scan((err, result) => {
-  util.log('开机扫描摄像头', err, JSON.stringify(result));
-});
+// scan((err, result) => {
+//   util.log('开机扫描摄像头', err, JSON.stringify(result));
+// });
 
 // setTimeout(() => {
 //   noticePushStream("1921680101", (err) => {
