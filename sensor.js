@@ -1,3 +1,4 @@
+let ACTION_CODES = Object.freeze({ CPH4: 4811, CPH686: 4812, CPH916: 4813, CO2SLOPE: 4821, CO2ZERO: 4822 });
 var SerialPort = require('serialport'),
   util = require('./util'),
   async = require('async'),
@@ -112,7 +113,110 @@ function __o2Change(data) {
   ev.emit('o2', val);
 }
 
-module.exports = Object.assign(ev, { lock, unlock });
+/**
+ * 标定ph4
+ * @param {Function} cb 
+ */
+function calibrationOfPH4_0(cb) {
+  lock();
+  port.write(Buffer.from("020300040001C5F8", "hex"));
+  setTimeout(() => {
+    let data = port.read(),
+      err = undefined,
+      strdata = null;
+    if (data && data[0] === 0x02 && data[1] === 0x03) {
+      strdata = data.toString("hex");
+    } else {
+      err = new util.BusinessError(4911, 'ph标定失败');
+    }
+    cb(err, strdata);
+    unlock();
+  }, 2000);
+}
+
+/**
+ * 标定ph 6.86
+ * @param {Function} cb 
+ */
+function calibrationOfPH6_86(cb) {
+  lock();
+  port.write(Buffer.from("0203000500019438", "hex"));
+  setTimeout(() => {
+    let data = port.read(),
+      err = undefined,
+      strdata = null;
+    if (data && data[0] === 0x02 && data[1] === 0x03) {
+      strdata = data.toString("hex");
+    } else {
+      err = new util.BusinessError(4911, 'ph标定失败');
+    }
+    cb(err, strdata);
+    unlock();
+  }, 2000);
+}
+
+/**
+ * 标定PH 9.16
+ * @param {Function}} cb 
+ */
+function calibrationOfPH9_16(cb) {
+  lock();
+  port.write(Buffer.from("0203000600016438", "hex"));
+  setTimeout(() => {
+    let data = port.read(),
+      err = undefined,
+      strdata = null;
+    if (data && data[0] === 0x02 && data[1] === 0x03) {
+      strdata = data.toString("hex");
+    } else {
+      err = new util.BusinessError(4911, 'ph标定失败');
+    }
+    cb(err, strdata);
+    unlock();
+  }, 2000);
+}
+
+/**
+ * 溶氧传感器 斜率标定（空气）
+ * @param {Function} cb 
+ */
+function calibrationOfO2Slope(cb) {
+  lock();
+  port.write(Buffer.from("060300040001C47C", "hex"));
+  setTimeout(() => {
+    let data = port.read(),
+      err = undefined,
+      strdata = null;
+    if (data && data[0] === 0x06 && data[1] === 0x03) {
+      strdata = data.toString("hex");
+    } else {
+      err = new util.BusinessError(4912, '溶氧传感器标定失败');
+    }
+    cb(err, strdata);
+    unlock();
+  }, 2000);
+}
+/**
+ * 溶氧传感器 零点标定（无氧水）
+ * @param {Function} cb 
+ */
+function calibrationOfO2Zero(cb) {
+  lock();
+  port.write(Buffer.from("06030005000195BC", "hex"));
+  setTimeout(() => {
+    let data = port.read(),
+      err = undefined,
+      strdata = null;
+    if (data && data[0] === 0x06 && data[1] === 0x03) {
+      strdata = data.toString("hex");
+    } else {
+      err = new util.BusinessError(4912, '溶氧传感器标定失败');
+    }
+    cb(err, strdata);
+    unlock();
+  }, 2000);
+}
+module.exports = Object.assign(ev, { lock, unlock, ACTION_CODES, calibrationOfPH4_0, calibrationOfPH6_86, calibrationOfPH9_16, calibrationOfO2Slope, calibrationOfO2Zero });
 
 // setTimeout(() => { lock(); }, 10000);
 // setTimeout(() => { unlock(); }, 20000);

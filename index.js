@@ -1,15 +1,17 @@
 //var async = require('async');
-var mqtt = require('mqtt');
-var mqttConfig = require('./config/index').mqtt;
-var service = require('./service');
-var planSetting = require('./setting-plan');
-var triggerSetting = require('./setting-trigger');
-var ioSetting = require('./setting-io');
-var cams = require('./cams');
-var upgrade = require('./upgrade');
-var version = upgrade.currentVersion;
-var util = require('./util');
-var __init_scan_cams = false;
+let mqtt = require('mqtt'),
+  mqttConfig = require('./config/index').mqtt,
+  service = require('./service'),
+  planSetting = require('./setting-plan'),
+  triggerSetting = require('./setting-trigger'),
+  ioSetting = require('./setting-io'),
+  sensor = require('./sensor'),
+  cams = require('./cams'),
+  upgrade = require('./upgrade'),
+  version = upgrade.currentVersion,
+  util = require('./util'),
+  __init_scan_cams = false;
+
 util.log('客户端版本v', version);
 require('./schedule');
 let CLIENT_ID = require('./setting-io').config.client_id;
@@ -258,6 +260,36 @@ client.on('message', function (topic, message) {
         //升级固件
         upgrade.upgrade((err) => {
           rpc(body.id, err);
+        });
+        break;
+      case sensor.ACTION_CODES.CPH4:
+        //标定ph 4.0 溶液
+        sensor.calibrationOfPH4_0((err, data) => {
+          rpc(body.id, err, data);
+        });
+        break;
+      case sensor.ACTION_CODES.CPH686:
+        //标定ph 6.86 溶液
+        sensor.calibrationOfPH6_86((err, data) => {
+          rpc(body.id, err, data);
+        });
+        break;
+      case sensor.ACTION_CODES.CPH916:
+        //标定ph 9.16 溶液
+        sensor.calibrationOfPH9_16((err, data) => {
+          rpc(body.id, err, data);
+        });
+        break;
+      case sensor.ACTION_CODES.CO2SLOPE:
+        //标定溶氧倾斜率（空气）
+        sensor.calibrationOfO2Slope((err, data) => {
+          rpc(body.id, err, data);
+        });
+        break;
+      case sensor.ACTION_CODES.CO2ZERO:
+        //标定溶氧零点（空气）
+        sensor.calibrationOfO2Zero((err, data) => {
+          rpc(body.id, err, data);
         });
         break;
       default:
